@@ -95,16 +95,16 @@
 - [ ] E-02 DB 프로비저닝 (Vercel Marketplace) — 진행 중: 로컬 Supabase(Docker, `pnpm db:start`)로 대체 운영, 클라우드는 Vercel 연결 후
 - [x] E-02 ORM 설정 + 첫 마이그레이션 성공 (Prisma 7.10.1, 로컬 Supabase에 `collection_run` 생성. pg_cron·pg_net 로컬 동작 확인, Free 클라우드는 미확인)
 - [ ] E-03 Vercel 프로젝트 연결 + `vercel env pull`
-- [ ] E-03 `.env.example` 작성
-- [ ] E-04 `/api/health` 라우트
-- [ ] E-04 외부 API 1건 호출 스모크 테스트
-- [ ] E-05 GitHub Actions CI (lint → typecheck → test → build)
-- [ ] E-06 훅 실동작 확인 (편집 시 포맷·린트, 턴 종료 시 빌드)
-- [ ] E-06 CLAUDE.md에 명령어·아키텍처 갱신
+- [x] E-03 `.env.example` 작성 (DATABASE_URL, DIRECT_URL, CRON_SECRET, X_BEARER_TOKEN)
+- [x] E-04 `/api/health` 라우트 (로컬 DB 정상 200, DB 중단 시 503 확인)
+- [x] E-04 외부 API 1건 호출 스모크 테스트 (`pnpm test:smoke`, Arrowhead WarID)
+- [x] E-05 GitHub Actions CI (format:check → lint → typecheck → test → build). 깨끗한 작업 트리에서 로컬 재현 통과, GitHub 실행은 푸시 후
+- [x] E-06 훅 실동작 확인 (편집 시 포맷·린트, 턴 종료 시 빌드: 통과·타입 오류 차단 모두 확인)
+- [x] E-06 CLAUDE.md에 명령어·아키텍처 갱신
 - [ ] E-07 첫 Preview 배포
 
 ### P2 완료 기준
-- [ ] 로컬 `pnpm build` 통과
+- [x] 로컬 `pnpm build` 통과
 - [ ] CI 녹색
 - [ ] Preview 배포 URL 확보
-- [ ] 훅이 실제로 포맷·린트·빌드를 수행한다
+- [x] 훅이 실제로 포맷·린트·빌드를 수행한다

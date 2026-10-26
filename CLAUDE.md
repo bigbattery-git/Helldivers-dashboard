@@ -8,7 +8,8 @@
 
 - 언어·프레임워크: TypeScript, Next.js (App Router), Node.js 런타임
 - 패키지 매니저: pnpm
-- DB·ORM·스케줄러: P1 자료조사에서 결정 (`docs/adr/` 참조)
+- DB·ORM·스케줄러: Supabase Postgres + Prisma 7 + Supabase Cron ([ADR 0003](docs/adr/0003-database-and-orm.md), [0004](docs/adr/0004-scheduler.md))
+- Next.js 16은 학습 데이터와 API가 다를 수 있다. 코드 작성 전 [AGENTS.md](AGENTS.md)대로 `node_modules/next/dist/docs/`의 해당 문서를 확인한다
 
 ## 현재 단계
 
@@ -20,11 +21,43 @@
 
 ## 명령어
 
-P2 환경 구축 후 채운다 (dev, build, lint, typecheck, test, 단일 테스트 실행).
+| 명령 | 내용 |
+| --- | --- |
+| `pnpm dev` | 개발 서버 (`http://localhost:3000`) |
+| `pnpm build` | 프로덕션 빌드. 빌드 중에는 DB에 접속하지 않는다 |
+| `pnpm lint` / `pnpm format` / `pnpm format:check` | ESLint / Prettier (`*.md`, `.claude/`는 포맷 제외) |
+| `pnpm typecheck` | `next typegen` 후 `tsc --noEmit` |
+| `pnpm test` | 단위 테스트 (Vitest `unit` 프로젝트, `src/**/*.test.ts`) |
+| `pnpm test src/lib/db-url.test.ts -t "이름"` | 단일 파일·단일 테스트 실행 (`--`를 붙이면 `-t`가 무시된다) |
+| `pnpm test:smoke` | 실제 외부 API를 부르는 스모크 테스트 (`*.smoke.test.ts`). CI에서는 돌리지 않는다 |
+| `pnpm db:start` / `pnpm db:stop` | 로컬 Supabase(Docker, DB `127.0.0.1:54322`, Studio `:54323`) |
+| `pnpm db:migrate` | `prisma migrate dev` (스키마 변경 → 마이그레이션 생성·적용) |
+
+- 로컬에서는 `DATABASE_URL`·`DIRECT_URL`이 없으면 로컬 Supabase 기본 주소를 쓴다. 프로덕션은 `DATABASE_URL`이 없으면 오류를 낸다. 키 이름은 `.env.example`.
+- Prisma 클라이언트는 `src/generated/prisma`에 생성되며(`postinstall`), 커밋하지 않는다.
+- CI(`.github/workflows/ci.yml`): `format:check → lint → typecheck → test → build`.
 
 ## 아키텍처
 
-P2 이후 채운다 (데이터 소스 → 수집 → DB → 화면으로 흐르는 경로, 핵심 모듈).
+데이터는 **외부 소스 → 수집 작업 → DB → 화면** 한 방향으로 흐른다. 화면은 DB만 읽고 외부 API를 부르지 않는다.
+
+```
+Arrowhead API, 커뮤니티 API(폴백), Steam, X
+        │  15분마다 (Supabase Cron → POST /api/collect, P3)
+        ▼
+Supabase Postgres  ← Prisma (src/lib/db.ts)
+        │  'use cache' + cacheTag, 수집 후 revalidateTag (P3)
+        ▼
+Next.js 화면 (src/app)
+```
+
+| 위치 | 역할 |
+| --- | --- |
+| `prisma/schema.prisma`, `prisma/migrations/` | DB 스키마와 마이그레이션. 연결 설정은 `prisma.config.ts` |
+| `src/lib/db.ts` | `getDb()` — Prisma 클라이언트(`@prisma/adapter-pg`)를 처음 호출할 때 만든다 |
+| `src/lib/db-url.ts` | DB URL 선택(환경변수 → 로컬 기본값, 프로덕션은 필수) |
+| `src/app/api/health/route.ts` | `GET /api/health` — DB 응답과 마지막 수집 시각. `connection()`으로 요청 시점에만 실행 |
+| `supabase/config.toml` | 로컬 Supabase 설정 |
 
 ## UI·디자인 시스템
 
