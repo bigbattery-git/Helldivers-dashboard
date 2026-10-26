@@ -92,8 +92,8 @@
 - [x] E-01 pnpm 설치 (corepack은 Windows 권한 오류(EPERM)로 실패 → `npm i -g pnpm@12.15.0`, `packageManager` 필드로 고정)
 - [x] E-01 `pnpm create next-app` (Next 16.4.3, TS, App Router, ESLint, Tailwind, `src/`, cacheComponents)
 - [x] E-01 Prettier, Vitest 설정 (`.npmrc` save-exact, 스크립트 lint·typecheck·test·format)
-- [ ] E-02 DB 프로비저닝 (Vercel Marketplace)
-- [ ] E-02 ORM 설정 + 첫 마이그레이션 성공
+- [ ] E-02 DB 프로비저닝 (Vercel Marketplace) — 진행 중: 로컬 Supabase(Docker, `pnpm db:start`)로 대체 운영, 클라우드는 Vercel 연결 후
+- [x] E-02 ORM 설정 + 첫 마이그레이션 성공 (Prisma 7.10.1, 로컬 Supabase에 `collection_run` 생성. pg_cron·pg_net 로컬 동작 확인, Free 클라우드는 미확인)
 - [ ] E-03 Vercel 프로젝트 연결 + `vercel env pull`
 - [ ] E-03 `.env.example` 작성
 - [ ] E-04 `/api/health` 라우트

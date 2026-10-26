@@ -10,9 +10,15 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:start": "supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgrest,edge-runtime,logflare,vector,supavisor",
+    "db:stop": "supabase stop",
+    "db:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -26,6 +32,8 @@
     "eslint-config-next": "16.4.3",
     "eslint-config-prettier": "10.1.8",
     "prettier": "3.9.10",
+    "prisma": "7.10.1",
+    "supabase": "2.122.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.5"
