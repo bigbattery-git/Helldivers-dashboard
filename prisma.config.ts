@@ -10,5 +10,6 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations" },
   // Direct (non-pooled) URL for migrations. Never throws, so `prisma generate` on install needs no env.
-  datasource: { url: process.env.DIRECT_URL ?? LOCAL_DATABASE_URL },
+  // `||`: a key copied empty from .env.example means unset, as in db-url.ts.
+  datasource: { url: process.env.DIRECT_URL || LOCAL_DATABASE_URL },
 });

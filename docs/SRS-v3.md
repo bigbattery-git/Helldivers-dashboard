@@ -110,7 +110,7 @@ Arrowhead 묶음(1~7 중 1·2·3·4·7, 순차)과 Steam 두 소스는 동시에
 
 ## 6. 스케줄 (D-11)
 
-`pnpm db:cron`이 `COLLECT_URL`(로컬 기본 `http://host.docker.internal:3000/api/collect`)과 `CRON_SECRET`으로 SQL을 만들어 `prisma db execute`로 실행한다.
+`pnpm db:cron`이 `COLLECT_URL`(로컬 기본 `http://host.docker.internal:4100/api/collect`)과 `CRON_SECRET`으로 SQL을 만들어 `prisma db execute`로 실행한다.
 
 - `collect`: `*/15 * * * *`, Vault의 시크릿으로 `net.http_post`, 타임아웃 60초
 - `retention`: `30 3 * * *`, §4의 30일 보관 테이블 정리 (D-06)

@@ -17,8 +17,9 @@ if (
   console.error("COLLECT_URL is required when DIRECT_URL is not local");
   process.exit(1);
 }
+// Port 4100: another local project binds 3000-3104, and its proxy on :3000 swallowed cron calls.
 const url =
-  process.env.COLLECT_URL || "http://host.docker.internal:3000/api/collect";
+  process.env.COLLECT_URL || "http://host.docker.internal:4100/api/collect";
 if (!secret) {
   console.error("CRON_SECRET is not set (.env.local or environment)");
   process.exit(1);

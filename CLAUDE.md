@@ -23,7 +23,7 @@
 
 | 명령 | 내용 |
 | --- | --- |
-| `pnpm dev` | 개발 서버 (`http://localhost:3000`) |
+| `pnpm dev` | 개발 서버 (`http://localhost:4100`. 3000~3104는 다른 로컬 프로젝트가 써서 피한다) |
 | `pnpm build` | 프로덕션 빌드. 빌드 중에는 DB에 접속하지 않는다 |
 | `pnpm lint` / `pnpm format` / `pnpm format:check` | ESLint / Prettier (`*.md`, `.claude/`는 포맷 제외) |
 | `pnpm typecheck` | `next typegen` 후 `tsc --noEmit` |
