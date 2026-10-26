@@ -7,6 +7,160 @@ datasource db {
   provider = "postgresql"
 }
 
+// Design notes: docs/adr/0005-db-schema.md. Names, sectors, effects and task/reward
+// tables are static data in the repo; the DB keeps only codes and measured values.
+// `slot` = collection start floored to 15 minutes, shared by every snapshot of one run.
+
+enum Lang {
+  ko
+  en
+}
+
+enum NewsSource {
+  steam
+  dispatch
+  x
+}
+
+// Current war season (one row).
+model War {
+  id        Int      @id
+  startedAt DateTime @map("started_at") @db.Timestamptz
+  endedAt   DateTime @map("ended_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("war")
+}
+
+// WarInfo metadata plus the latest Status values. Screens read current state from here.
+model Planet {
+  index          Int      @id @db.SmallInt
+  positionX      Float    @map("position_x") @db.Real
+  positionY      Float    @map("position_y") @db.Real
+  maxHealth      Int      @map("max_health")
+  // 1 human, 2 terminid, 3 automaton, 4 illuminate
+  owner          Int      @db.SmallInt
+  health         Int
+  players        Int
+  // null = no active campaign on this planet
+  campaignType   Int?     @map("campaign_type") @db.SmallInt
+  // Source planets of Status.planetAttacks targeting this planet
+  attackedBy     Int[]    @default([]) @map("attacked_by") @db.SmallInt
+  effectIds      Int[]    @default([]) @map("effect_ids")
+  currentEventId Int?     @unique @map("current_event_id")
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  currentEvent PlanetEvent?     @relation(fields: [currentEventId], references: [id], onDelete: SetNull)
+  snapshots    PlanetSnapshot[]
+
+  @@map("planet")
+}
+
+// Defense events. Fields follow the community OpenAPI spec; real payload is unverified (E-04).
+model PlanetEvent {
+  id          Int      @id
+  planetIndex Int      @map("planet_index") @db.SmallInt
+  eventType   Int      @map("event_type") @db.SmallInt
+  faction     Int      @db.SmallInt
+  health      Int
+  maxHealth   Int      @map("max_health")
+  startAt     DateTime @map("start_at") @db.Timestamptz
+  endAt       DateTime @map("end_at") @db.Timestamptz
+  campaignId  Int?     @map("campaign_id")
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  planet Planet?
+
+  @@index([planetIndex])
+  @@map("planet_event")
+}
+
+model PlanetSnapshot {
+  planetIndex Int      @map("planet_index") @db.SmallInt
+  slot        DateTime @db.Timestamptz
+  owner       Int      @db.SmallInt
+  health      Int
+  players     Int
+  // Defense event HP while the planet is under defense
+  eventHealth Int?     @map("event_health")
+
+  planet Planet @relation(fields: [planetIndex], references: [index])
+
+  @@id([planetIndex, slot])
+  @@index([slot], type: Brin)
+  @@map("planet_snapshot")
+}
+
+model MajorOrder {
+  // Arrowhead id32 (unsigned 32-bit)
+  id        BigInt   @id
+  title     String
+  briefing  String
+  lang      Lang
+  // Raw [{ type, values, valueTypes }], interpreted with the static task table
+  tasks     Json
+  rewards   Json
+  startedAt DateTime @map("started_at") @db.Timestamptz
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  // Set to false when a successful Assignment fetch no longer lists it
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  progress MajorOrderProgress[]
+
+  @@map("major_order")
+}
+
+model MajorOrderProgress {
+  orderId  BigInt   @map("order_id")
+  slot     DateTime @db.Timestamptz
+  // One value per task, same order as major_order.tasks
+  progress BigInt[]
+
+  order MajorOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@id([orderId, slot])
+  @@map("major_order_progress")
+}
+
+model GlobalSnapshot {
+  slot         DateTime @id @db.Timestamptz
+  steamPlayers Int?     @map("steam_players")
+
+  @@map("global_snapshot")
+}
+
+model NewsItem {
+  id          BigInt     @id @default(autoincrement())
+  source      NewsSource
+  // Steam gid, dispatch id, or tweet id
+  externalId  String     @map("external_id")
+  patchNotes  Boolean    @default(false) @map("patch_notes")
+  // null for dispatches (derived from the first <i=3> line) and X posts
+  title       String?
+  // Raw source markup; converted at render time
+  body        String
+  lang        Lang
+  url         String?
+  publishedAt DateTime   @map("published_at") @db.Timestamptz
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([source, externalId])
+  @@index([publishedAt])
+  @@map("news_item")
+}
+
+// Latest raw response per source, overwritten each fetch (ADR 0003). For re-parsing and debugging.
+model RawPayload {
+  source    String   @id
+  fetchedAt DateTime @map("fetched_at") @db.Timestamptz
+  body      Json
+
+  @@map("raw_payload")
+}
+
 // One row per collector run (SRS v2 D-05). Per-source results live in `results`.
 model CollectionRun {
   id         BigInt    @id @default(autoincrement())
