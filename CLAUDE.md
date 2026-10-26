@@ -86,7 +86,8 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 - type: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `build`, `perf`, `style`
 - scope(선택): `harness`, `research`, `infra`, `api`, `ui`, `db` 등
 - 예: `chore(harness): SessionStart 체크리스트 알림 훅 추가`, `docs(research): Steam 뉴스 API 조사 결과 정리`
-- 사용자가 요청할 때만 커밋한다.
+- 작업을 마치고 보고하기 전에 요청이 없어도 커밋까지 한다 (검사 통과 후).
+- 푸시, PR 생성, 병합은 사용자가 요청할 때만 한다.
 
 ## 문서 규칙
 
