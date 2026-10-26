@@ -8,12 +8,14 @@
       "Read(./.env.development)",
       "Read(./.env.production)",
       "Read(./.env.test)",
+      "Read(./.vercel/.env.*)",
       "Edit(./.env)",
       "Edit(./.env.local)",
       "Edit(./.env.*.local)",
       "Edit(./.env.development)",
       "Edit(./.env.production)",
-      "Edit(./.env.test)"
+      "Edit(./.env.test)",
+      "Edit(./.vercel/.env.*)"
     ]
   },
   "hooks": {

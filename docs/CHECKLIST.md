@@ -30,7 +30,7 @@
 - [x] H-04 `.claude/settings.json`에 위 훅 등록
 
 ### 권한·보안
-- [x] H-05 `.claude/settings.json` `permissions.deny`에 `.env*` Read/Edit/Write 차단
+- [x] H-05 `.claude/settings.json` `permissions.deny`에 `.env` 계열 파일(최상위, `.vercel/.env.*`) Read/Edit 차단 (Edit 규칙이 Write도 포함, `.env.example`은 허용)
 - [x] H-05 `.gitignore` 작성 (`.env*`, `!.env.example`, `node_modules`, `.next`, `.vercel` 등)
 
 ### MCP

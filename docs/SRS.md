@@ -53,7 +53,7 @@
 | H-02 | **Skill `srs-sync`**: 작업 후 CHECKLIST 체크 상태 갱신, SRS 상태표(§9) 갱신, 결정사항을 ADR로 기록하는 절차 | `.claude/skills/srs-sync/SKILL.md` |
 | H-03 | **Subagents** 3종 정의 (아래 표) | `.claude/agents/*.md` |
 | H-04 | **Hooks** 4종 (아래 표). Windows 호환을 위해 Node 스크립트(`.mjs`)로 작성 | `.claude/settings.json`, `.claude/hooks/*.mjs` |
-| H-05 | **권한·비밀정보 보호**: `permissions.deny`에 `.env*` 읽기/편집/쓰기 차단(`Edit` 규칙이 Write도 포함하며, `.env.example`은 열어둔다), `.gitignore`에 `.env*` 추가(`.env.example`은 예외) | `.claude/settings.json`, `.gitignore` |
+| H-05 | **권한·비밀정보 보호**: `permissions.deny`에 `.env*`와 `.vercel/.env.*` 읽기/편집/쓰기 차단(`Edit` 규칙이 Write도 포함하며, `.env.example`은 열어둔다), `.gitignore`에 `.env*` 추가(`.env.example`은 예외) | `.claude/settings.json`, `.gitignore` |
 | H-06 | **MCP 서버**: context7, Vercel, Playwright, GitHub 사용 가능 상태로 구성 (아래 표) | `.mcp.json` |
 | H-07 | **에디터 설정**: LF, UTF-8, 들여쓰기 2칸 | `.editorconfig` |
 
