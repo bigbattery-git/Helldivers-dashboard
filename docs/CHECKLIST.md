@@ -1,6 +1,6 @@
 # 체크리스트
 
-현재 단계: P2
+현재 단계: P3
 
 요구사항 상세는 [SRS.md](SRS.md)를 따른다. 각 항목 앞의 ID는 SRS 요구사항 ID다.
 단계 끝의 **완료 기준**을 모두 만족해야 다음 단계로 넘어가며, 넘어갈 때 위의 `현재 단계` 줄을 갱신한다.
@@ -108,3 +108,47 @@
 - [x] CI 녹색 (PR #1, run 40280731440, 2026-10-26)
 - [ ] Preview 배포 URL 확보
 - [x] 훅이 실제로 포맷·린트·빌드를 수행한다
+
+P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)은 사용자 작업으로 P3와 병행한다. 완료 기준 미충족 상태로 P3에 들어가는 예외는 사용자 결정이다 (2026-10-26).
+
+## P3 — 데이터 수집
+
+요구사항 상세는 [SRS-v3.md](SRS-v3.md)를 따른다.
+
+### 문서
+- [x] SRS v3(수집 명세) 작성, SRS v2 §8에 단계 분리 반영
+- [x] D-10 ADR 0005 오류 보고(Sentry)
+- [x] `game-api.md`에 `Accept-Language` 필수화·새 필드 기록, CLAUDE.md 명령어·아키텍처 갱신
+
+### 스키마
+- [x] D-09 `war`, `planet`, `planet_effect`, `planet_snapshot`, `planet_event`, `campaign` 모델
+- [x] D-04 `assignment`, `assignment_snapshot`, `news_item`, `global_snapshot`, `war_stats_snapshot` 모델
+- [x] D-04 마이그레이션 생성·적용 (`pnpm db:migrate`) (`20261026071445_collection_schema`)
+
+### 수집
+- [x] D-04 슬롯·전쟁 시간 환산 (`util.ts`) + 테스트
+- [x] D-02 일일 단계: WarID·WarInfo·정적 행성 JSON → `war`·`planet`
+- [x] D-01 Status → 행성 스냅샷·위치·캠페인·디펜스 이벤트·효과 구간 + 테스트
+- [x] D-12 Assignment·NewsFeed(ko-KR) + 한글 판별 테스트
+- [x] D-01 Steam 동접자, Steam 뉴스 API + RSS 병합 + 테스트
+- [x] D-02 Stats summary (1시간)
+- [x] D-05 D-08 `runCollection` (Steam 동접자를 일부러 실패시켜 나머지 저장 확인): 소스별 격리, `collection_run` 기록
+
+### 엔드포인트·관측
+- [x] D-01 `POST /api/collect` (시크릿 없음 401, 실수집 200) (Bearer `CRON_SECRET` 상수 시간 비교)
+- [ ] D-10 Sentry 서버 초기화(`SENTRY_DSN` 없으면 비활성), 검증 실패 보고 — 진행 중: 코드 완료, DSN으로 실제 전송 확인 남음
+- [ ] D-10 **[사용자]** Sentry 프로젝트 생성, `.env.local`에 `SENTRY_DSN`·`CRON_SECRET` 추가
+
+### 스케줄
+- [x] D-11 `pnpm db:cron` (2회 실행해도 작업 2개·시크릿 1개, pg_net → 로컬 dev 서버 200) (수집 15분, 30일 정리 D-06)
+
+### P3 완료 기준
+- [ ] 로컬 pg_cron이 연속 8슬롯(2시간) 빠짐없이 수집했다 — 진행 중: 2026-10-26 16:25 KST 등록, 16:30 첫 정기 실행 성공
+- [x] 같은 슬롯 재호출에 (2026-10-26, 재호출 후 planet_snapshot 273행 유지) 스냅샷 행 수가 늘지 않는다
+- [ ] 소스 하나를 일부러 실패시켜도 나머지가 저장되고 Sentry에 이벤트가 남는다 — 진행 중: 격리는 확인, Sentry는 DSN 대기
+- [x] `planet`에 전 행성의 한국어 이름 (273/273)이 채워져 있다
+- [ ] CI 녹색
+
+## P4 — 화면
+
+SRS v2 §3·§4. P3 완료 후 체크리스트를 작성한다.

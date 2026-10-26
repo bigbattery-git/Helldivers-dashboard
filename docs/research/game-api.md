@@ -322,3 +322,12 @@ Arrowhead 원본을 20초마다 동기화해 정규화한 C# 서비스. MIT 라�
 - 디펜스 이벤트(`planetEvents`)가 있을 때의 실제 응답 형태 (조사 시점 0건).
 - `Status`의 `globalEvents[].message`가 `Accept-Language: ko-KR`로 한국어가 오는지 (이번에는 en-US로만 호출).
 - MO 태스크 `values`/`valueTypes`와 보상 `type` 해석 표(C) 검증.
+
+## 추가 확인 (2026-10-26, P3 계획 중 1회 호출)
+
+- `WarSeason/{id}/Status`가 `Accept-Language` 헤더 없이 호출하면 `{"errorCode":13018011,"message":"Accept-Language HTTP header missing"}`를 준다(HTTP 상태도 오류). 모든 Arrowhead 호출에 헤더를 넣는다.
+- `Status` 최상위 키: `warId, time, impactMultiplier, storyBeatId32, planetStatus, planetAttacks, campaigns, communityTargets, jointOperations, planetEvents, planetActiveEffects, planetRegions, activeElectionPolicyEffects, globalEvents, superEarthWarResults, spaceStations, globalResources, layoutVersion`.
+  - `planetStatus[]`에 `position {x, y}`가 있다(행성이 움직일 수 있음).
+  - `planetActiveEffects[]` = `{index, galacticEffectId}` (154건). 행성 환경 변화 추적에 쓴다.
+  - `planetRegions[]` = 행성 내부 지역별 소유·HP·플레이어 (34건, P3에서는 저장 안 함).
+- `WarInfo.planetInfos[]` = `{index, settingsHash, planetNameId32, planetBiomeId32, position, waypoints, sector, maxHealth, disabled, initialOwner}`. 최상위에 `planetPermanentEffects`, `planetRegions`, `homeWorlds`, `capitalInfos`도 있다.
