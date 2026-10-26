@@ -12,6 +12,9 @@ next-env.d.ts
 # vercel
 .vercel/
 
+# secrets
+*.pem
+
 # env (keep the example)
 .env*
 !.env.example

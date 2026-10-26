@@ -89,9 +89,9 @@
 
 ## P2 — 환경 구축
 
-- [ ] E-01 pnpm 설치 (`corepack enable pnpm`, 현재 미설치)
-- [ ] E-01 `pnpm create next-app` (TS, App Router, ESLint, `src/`)
-- [ ] E-01 Prettier, Vitest 설정
+- [x] E-01 pnpm 설치 (corepack은 Windows 권한 오류(EPERM)로 실패 → `npm i -g pnpm@12.15.0`, `packageManager` 필드로 고정)
+- [x] E-01 `pnpm create next-app` (Next 16.4.3, TS, App Router, ESLint, Tailwind, `src/`, cacheComponents)
+- [x] E-01 Prettier, Vitest 설정 (`.npmrc` save-exact, 스크립트 lint·typecheck·test·format)
 - [ ] E-02 DB 프로비저닝 (Vercel Marketplace)
 - [ ] E-02 ORM 설정 + 첫 마이그레이션 성공
 - [ ] E-03 Vercel 프로젝트 연결 + `vercel env pull`
