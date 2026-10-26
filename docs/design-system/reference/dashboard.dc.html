@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tactical HUD 대시보드</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #070b12;
+          }
+          a {
+            color: #4fd1e8;
+          }
+          a:hover {
+            color: #9be6f3;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          min-height: 1180px;
+          background: #070b12;
+          color: #dce6f0;
+          font-family: &quot;Noto Sans KR&quot;, sans-serif;
+          box-sizing: border-box;
+          padding: 32px 24px;
+        "
+      >
+        <div
+          style="
+            max-width: 1392px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+          "
+        >
+          <header
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              justify-content: space-between;
+              gap: 16px;
+              border-bottom: 1px solid #1e2c3d;
+              padding-bottom: 20px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 16px">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                fill="none"
+                stroke="{{accent}}"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M20 3 L35 11 V29 L20 37 L5 29 V11 Z"></path>
+                <path d="M20 12 V28 M12 20 H28"></path>
+              </svg>
+              <div>
+                <div
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 12px;
+                    letter-spacing: 3px;
+                    color: #8a9bb0;
+                  "
+                >
+                  GALACTIC WAR · DAY 1,024
+                </div>
+                <h1
+                  style="
+                    margin: 0;
+                    font-family: &quot;Rajdhani&quot;, sans-serif;
+                    font-size: 36px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                    color: #f2f6fa;
+                  "
+                >
+                  전술 지휘 대시보드
+                </h1>
+              </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px">
+              <div
+                style="
+                  border: 1px solid #1e2c3d;
+                  background: #0d1520;
+                  padding: 10px 16px;
+                  min-width: 140px;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 11px;
+                    color: #8a9bb0;
+                    letter-spacing: 2px;
+                  "
+                >
+                  ACTIVE DIVERS
+                </div>
+                <div
+                  style="font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; color: {{accent}}"
+                >
+                  214,880
+                </div>
+              </div>
+              <div
+                style="
+                  border: 1px solid #1e2c3d;
+                  background: #0d1520;
+                  padding: 10px 16px;
+                  min-width: 140px;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 11px;
+                    color: #8a9bb0;
+                    letter-spacing: 2px;
+                  "
+                >
+                  PLANETS LIBERATED
+                </div>
+                <div
+                  style="
+                    font-family: &quot;Rajdhani&quot;, sans-serif;
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #4fd1e8;
+                  "
+                >
+                  47 / 261
+                </div>
+              </div>
+              <div
+                style="
+                  border: 1px solid #1e2c3d;
+                  background: #0d1520;
+                  padding: 10px 16px;
+                  min-width: 140px;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 11px;
+                    color: #8a9bb0;
+                    letter-spacing: 2px;
+                  "
+                >
+                  SAMPLE DATA
+                </div>
+                <div
+                  style="
+                    font-family: &quot;Rajdhani&quot;, sans-serif;
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #f2f6fa;
+                  "
+                >
+                  10.26 21:00
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 20px">
+            <section
+              style="
+                flex: 2 1 640px;
+                min-width: 0;
+                border: 1px solid #1e2c3d;
+                background: #0d1520;
+                padding: 20px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 12px;
+                  margin-bottom: 12px;
+                "
+              >
+                <h2
+                  style="
+                    margin: 0;
+                    font-family: &quot;Rajdhani&quot;, sans-serif;
+                    font-size: 20px;
+                    letter-spacing: 2px;
+                    color: #f2f6fa;
+                  "
+                >
+                  은하계 전황
+                  <span
+                    style="
+                      font-family: &quot;JetBrains Mono&quot;, monospace;
+                      font-size: 12px;
+                      letter-spacing: 0;
+                      color: #8a9bb0;
+                    "
+                    >· 행성에 마우스를 올려 해방 상태 확인</span
+                  >
+                </h2>
+                <div
+                  style="
+                    display: flex;
+                    gap: 16px;
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 12px;
+                    color: #b7c4d3;
+                  "
+                >
+                  <span style="display: flex; align-items: center; gap: 6px"
+                    ><span
+                      style="
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        background: #f5b76a;
+                        display: inline-block;
+                      "
+                    ></span
+                    >테르미니드</span
+                  >
+                  <span style="display: flex; align-items: center; gap: 6px"
+                    ><span
+                      style="
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        background: #ff6b6b;
+                        display: inline-block;
+                      "
+                    ></span
+                    >오토마톤</span
+                  >
+                  <span style="display: flex; align-items: center; gap: 6px"
+                    ><span
+                      style="
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        background: #b5a6ff;
+                        display: inline-block;
+                      "
+                    ></span
+                    >일루미네이트</span
+                  >
+                  <span style="display: flex; align-items: center; gap: 6px"
+                    ><span
+                      style="
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        border: 1.5px dashed #4fd1e8;
+                        display: inline-block;
+                        box-sizing: border-box;
+                      "
+                    ></span
+                    >방어전</span
+                  >
+                </div>
+              </div>
+
+              <div
+                style="
+                  position: relative;
+                  width: 100%;
+                  aspect-ratio: 640 / 380;
+                  background: #05080e;
+                  overflow: visible;
+                "
+              >
+                <svg
+                  viewBox="0 0 640 380"
+                  preserveAspectRatio="none"
+                  style="
+                    position: absolute;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                  "
+                  aria-hidden="true"
+                >
+                  <g fill="#FFFFFF">
+                    <circle cx="40" cy="30" r="0.8"></circle>
+                    <circle cx="210" cy="60" r="0.6"></circle>
+                    <circle cx="600" cy="40" r="0.8"></circle>
+                    <circle cx="520" cy="330" r="0.6"></circle>
+                    <circle cx="90" cy="350" r="0.8"></circle>
+                    <circle cx="380" cy="20" r="0.6"></circle>
+                    <circle cx="620" cy="250" r="0.7"></circle>
+                    <circle cx="20" cy="200" r="0.6"></circle>
+                  </g>
+                  <g fill="none" stroke="#FFFFFF" stroke-opacity="0.12">
+                    <ellipse cx="320" cy="190" rx="90" ry="40"></ellipse>
+                    <ellipse cx="320" cy="190" rx="190" ry="90"></ellipse>
+                    <ellipse cx="320" cy="190" rx="290" ry="150"></ellipse>
+                  </g>
+                  <circle
+                    cx="320"
+                    cy="190"
+                    r="22"
+                    fill="{{accent}}"
+                    fill-opacity="0.14"
+                  ></circle>
+                  <circle cx="320" cy="190" r="6" fill="{{accent}}"></circle>
+                </svg>
+                <div
+                  style="
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%, 22px);
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 12px;
+                    letter-spacing: 3px;
+                    color: #f2f6fa;
+                    white-space: nowrap;
+                    pointer-events: none;
+                  "
+                >
+                  SUPER EARTH
+                </div>
+
+                <sc-for list="{{planets}}" as="p" hint-placeholder-count="5">
+                  <button
+                    type="button"
+                    aria-label="{{p.aria}}"
+                    onMouseEnter="{{p.on}}"
+                    onMouseLeave="{{p.off}}"
+                    onFocus="{{p.on}}"
+                    onBlur="{{p.off}}"
+                    style="position: absolute; left: {{p.left}}; top: {{p.top}}; transform: translate(-50%, -50%); width: 44px; height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"
+                  >
+                    <span
+                      style="position: absolute; width: {{p.glow}}; height: {{p.glow}}; border-radius: 50%; background: {{p.color}}; opacity: 0.18"
+                    ></span>
+                    <span
+                      style="position: relative; width: 10px; height: 10px; border-radius: 50%; background: {{p.color}}"
+                    ></span>
+                    <sc-if value="{{p.isDef}}" hint-placeholder-val="{{false}}"
+                      ><span
+                        style="
+                          position: absolute;
+                          width: 22px;
+                          height: 22px;
+                          border-radius: 50%;
+                          border: 1.5px dashed #4fd1e8;
+                          box-sizing: border-box;
+                        "
+                      ></span
+                    ></sc-if>
+                    <sc-if value="{{p.active}}" hint-placeholder-val="{{false}}"
+                      ><span
+                        style="position: absolute; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid {{accent}}"
+                      ></span
+                    ></sc-if>
+                  </button>
+                  <div
+                    style="position: absolute; left: {{p.left}}; top: {{p.top}}; transform: {{p.labelTf}}; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #B7C4D3; white-space: nowrap; pointer-events: none"
+                  >
+                    {{p.name}}
+                  </div>
+                </sc-for>
+
+                <sc-if value="{{hasLibTip}}" hint-placeholder-val="{{false}}">
+                  <div
+                    role="tooltip"
+                    style="position: absolute; left: {{tip.left}}; top: {{tip.top}}; transform: {{tip.tipTf}}; z-index: 5; width: 240px; box-sizing: border-box; background: #0D1520; border: 1px solid {{tip.color}}; padding: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; display: flex; flex-direction: column; gap: 8px"
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: baseline;
+                        gap: 8px;
+                      "
+                    >
+                      <span
+                        style="
+                          font-family: &quot;Rajdhani&quot;, sans-serif;
+                          font-size: 20px;
+                          font-weight: 700;
+                          color: #f2f6fa;
+                        "
+                        >{{tip.name}}</span
+                      >
+                      <span
+                        style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: {{tip.color}}"
+                        >{{tip.faction}}</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 11px;
+                        color: #8a9bb0;
+                      "
+                    >
+                      {{tip.sector}} 섹터 · {{tip.status}}
+                    </div>
+                    <div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 12px;
+                          color: #b7c4d3;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        <span>해방도</span
+                        ><span style="color: #f2f6fa; font-weight: 600"
+                          >{{tip.pct}}%</span
+                        >
+                      </div>
+                      <div style="height: 6px; background: #1e2c3d">
+                        <div
+                          style="height: 100%; width: {{tip.pct}}%; background: {{tip.color}}"
+                        ></div>
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: #b7c4d3;
+                      "
+                    >
+                      <span>투입 인원</span
+                      ><span style="color: #f2f6fa">{{tip.players}}</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: #b7c4d3;
+                      "
+                    >
+                      <span>시간당 변화</span
+                      ><span style="color: #f2f6fa">{{tip.rate}}</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        border-top: 1px solid #1e2c3d;
+                        padding-top: 8px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 11px;
+                          letter-spacing: 2px;
+                          color: #8a9bb0;
+                        "
+                      >
+                        행성 요소
+                      </div>
+                      <sc-for
+                        list="{{tip.hazards}}"
+                        as="h"
+                        hint-placeholder-count="2"
+                      >
+                        <div
+                          style="background: #070B12; padding: 6px 8px; border-left: 2px solid {{h.color}}"
+                        >
+                          <div
+                            style="font-size: 12px; font-weight: 500; color: {{h.color}}"
+                          >
+                            {{h.name}}
+                            <span
+                              style="
+                                font-family:
+                                  &quot;JetBrains Mono&quot;, monospace;
+                                font-size: 10px;
+                                color: #8a9bb0;
+                              "
+                              >{{h.kindLabel}}</span
+                            >
+                          </div>
+                          <div
+                            style="
+                              font-size: 11px;
+                              color: #b7c4d3;
+                              line-height: 1.4;
+                            "
+                          >
+                            {{h.desc}}
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{hasDefTip}}" hint-placeholder-val="{{false}}">
+                  <div
+                    role="tooltip"
+                    style="position: absolute; left: {{tip.left}}; top: 50%; transform: {{tip.defTf}}; z-index: 5; width: 300px; box-sizing: border-box; background: #0D1520; border: 1px solid {{accent}}; box-shadow: 0 8px 28px rgba(0,0,0,0.6); pointer-events: none; display: flex; flex-direction: column"
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 6px 10px;
+                        background: #070b12;
+                        border-bottom: 1px solid #1e2c3d;
+                      "
+                    >
+                      <span
+                        style="display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: {{tip.color}}"
+                        ><svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M6 1 L11 4 V8 L6 11 L1 8 V4 Z"></path></svg
+                        >{{tip.faction}}</span
+                      >
+                      <span
+                        style="
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 11px;
+                          color: #8a9bb0;
+                        "
+                        >{{tip.sector}} 섹터</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        position: relative;
+                        height: 84px;
+                        overflow: hidden;
+                        background: linear-gradient(
+                          180deg,
+                          #2a2418 0%,
+                          #4a3a22 60%,
+                          #1b1710 100%
+                        );
+                      "
+                    >
+                      <svg
+                        viewBox="0 0 300 84"
+                        preserveAspectRatio="none"
+                        style="
+                          position: absolute;
+                          inset: 0;
+                          width: 100%;
+                          height: 100%;
+                        "
+                        aria-hidden="true"
+                      >
+                        <circle
+                          cx="230"
+                          cy="26"
+                          r="14"
+                          fill="#E8D7A8"
+                          fill-opacity="0.35"
+                        ></circle>
+                        <path
+                          d="M0 70 L40 52 L70 62 L110 44 L150 58 L190 48 L230 60 L270 46 L300 54 V84 H0 Z"
+                          fill="#14110B"
+                        ></path>
+                        <path
+                          d="M0 78 L60 66 L120 74 L180 64 L240 72 L300 66 V84 H0 Z"
+                          fill="#0A0806"
+                        ></path>
+                      </svg>
+                      <span
+                        style="
+                          position: absolute;
+                          right: 8px;
+                          bottom: 6px;
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 10px;
+                          color: #cdbf9c;
+                        "
+                        >[행성 이미지]</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        padding: 12px 14px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                      "
+                    >
+                      <div
+                        style="display: flex; align-items: center; gap: 10px"
+                      >
+                        <svg
+                          width="28"
+                          height="28"
+                          viewBox="0 0 28 28"
+                          fill="none"
+                          stroke="#4FD1E8"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M14 3 L24 7 V14 C24 20 19 24 14 26 C9 24 4 20 4 14 V7 Z"
+                          ></path>
+                        </svg>
+                        <div>
+                          <div
+                            style="
+                              font-family:
+                                &quot;JetBrains Mono&quot;, monospace;
+                              font-size: 11px;
+                              letter-spacing: 2px;
+                              color: #4fd1e8;
+                            "
+                          >
+                            방어
+                          </div>
+                          <div
+                            style="font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; color: {{accent}}"
+                          >
+                            {{tip.name}}
+                          </div>
+                        </div>
+                        <div
+                          style="margin-left: auto; display: flex; flex-direction: column; align-items: center; border: 1px solid {{tip.color}}; padding: 4px 8px"
+                        >
+                          <span
+                            style="
+                              font-family: &quot;Rajdhani&quot;, sans-serif;
+                              font-size: 22px;
+                              font-weight: 700;
+                              line-height: 1;
+                              color: #f2f6fa;
+                            "
+                            >{{tip.invasion}}</span
+                          >
+                          <span
+                            style="
+                              font-family:
+                                &quot;JetBrains Mono&quot;, monospace;
+                              font-size: 10px;
+                              color: #b7c4d3;
+                            "
+                            >침공 레벨</span
+                          >
+                        </div>
+                      </div>
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 12px;
+                          line-height: 1.5;
+                          color: #b7c4d3;
+                        "
+                      >
+                        행성이 공격받고 있습니다. 적의 공세가 완료되기 전에 방어
+                        진행도를 100%로 끌어올려야 합니다.
+                      </p>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          align-items: baseline;
+                          background: #070b12;
+                          padding: 8px 10px;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 11px;
+                            color: #8a9bb0;
+                          "
+                          >남은 시간</span
+                        >
+                        <span
+                          style="
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 20px;
+                            font-weight: 600;
+                            color: #f2f6fa;
+                          "
+                          >{{tip.timeLeft}}</span
+                        >
+                      </div>
+                      <div>
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 12px;
+                            color: #b7c4d3;
+                            margin-bottom: 4px;
+                          "
+                        >
+                          <span>방어 진행 상황</span
+                          ><span
+                            ><span style="color: #8a9bb0">{{tip.rate}}</span>
+                            <span style="color: #f2f6fa; font-weight: 600"
+                              >{{tip.pct}}%</span
+                            ></span
+                          >
+                        </div>
+                        <div style="height: 10px; background: #1e2c3d">
+                          <div
+                            style="height: 100%; width: {{tip.pct}}%; background: #4FD1E8"
+                          ></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 12px;
+                            color: #b7c4d3;
+                            margin-bottom: 4px;
+                          "
+                        >
+                          <span>적의 공세 상황</span
+                          ><span
+                            ><span style="color: #8a9bb0"
+                              >{{tip.enemyRate}}</span
+                            >
+                            <span style="color: #f2f6fa; font-weight: 600"
+                              >{{tip.enemyPct}}%</span
+                            ></span
+                          >
+                        </div>
+                        <div style="height: 10px; background: #1e2c3d">
+                          <div
+                            style="height: 100%; width: {{tip.enemyPct}}%; background: {{tip.color}}"
+                          ></div>
+                        </div>
+                      </div>
+                      <div
+                        style="display: flex; flex-direction: column; gap: 6px"
+                      >
+                        <div
+                          style="
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 11px;
+                            letter-spacing: 2px;
+                            color: #8a9bb0;
+                          "
+                        >
+                          행성 요소
+                        </div>
+                        <sc-for
+                          list="{{tip.hazards}}"
+                          as="h"
+                          hint-placeholder-count="2"
+                        >
+                          <div
+                            style="background: #070B12; padding: 6px 8px; border-left: 2px solid {{h.color}}"
+                          >
+                            <div
+                              style="font-size: 12px; font-weight: 500; color: {{h.color}}"
+                            >
+                              {{h.name}}
+                              <span
+                                style="
+                                  font-family:
+                                    &quot;JetBrains Mono&quot;, monospace;
+                                  font-size: 10px;
+                                  color: #8a9bb0;
+                                "
+                                >{{h.kindLabel}}</span
+                              >
+                            </div>
+                            <div
+                              style="
+                                font-size: 11px;
+                                color: #b7c4d3;
+                                line-height: 1.4;
+                              "
+                            >
+                              {{h.desc}}
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 12px;
+                          color: #b7c4d3;
+                        "
+                      >
+                        <span>공격 출발지</span
+                        ><span style="color: #f2f6fa">{{tip.from}}</span>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 12px;
+                          color: #b7c4d3;
+                        "
+                      >
+                        <span>투입 인원</span
+                        ><span style="color: #f2f6fa">{{tip.players}}</span>
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 8px 14px;
+                        border-top: 1px solid #1e2c3d;
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: #b7c4d3;
+                      "
+                    >
+                      <span>예상 결과</span
+                      ><span
+                        style="font-weight: 600; color: {{tip.outlookColor}}"
+                        >{{tip.outlook}}</span
+                      >
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </section>
+
+            <section
+              style="flex: 1 1 320px; min-width: 0; border: 1px solid {{accent}}; background: #0D1520; padding: 20px; display: flex; flex-direction: column; gap: 14px"
+            >
+              <div
+                style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 3px; color: {{accent}}"
+              >
+                ▲ MAJOR ORDER
+              </div>
+              <h2
+                style="
+                  margin: 0;
+                  font-family: &quot;Rajdhani&quot;, sans-serif;
+                  font-size: 26px;
+                  line-height: 1.2;
+                  color: #f2f6fa;
+                "
+              >
+                말레볼론 크릭을 오토마톤으로부터 해방하라
+              </h2>
+              <p
+                style="
+                  margin: 0;
+                  font-size: 14px;
+                  line-height: 1.6;
+                  color: #b7c4d3;
+                "
+              >
+                세베린 섹터의 오토마톤 공장 행성을 탈환해 동부 전선의 보급로를
+                확보한다.
+              </p>
+              <div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 12px;
+                    color: #b7c4d3;
+                    margin-bottom: 6px;
+                  "
+                >
+                  <span>진행도</span><span>62%</span>
+                </div>
+                <div style="height: 10px; background: #1e2c3d">
+                  <div
+                    style="height: 100%; width: 62%; background: {{accent}}"
+                  ></div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px">
+                <div style="flex: 1; background: #070b12; padding: 12px">
+                  <div style="font-size: 12px; color: #8a9bb0">남은 시간</div>
+                  <div
+                    style="
+                      font-family: &quot;Rajdhani&quot;, sans-serif;
+                      font-size: 22px;
+                      font-weight: 700;
+                    "
+                  >
+                    2일 14시간
+                  </div>
+                </div>
+                <div style="flex: 1; background: #070b12; padding: 12px">
+                  <div style="font-size: 12px; color: #8a9bb0">보상</div>
+                  <div
+                    style="
+                      font-family: &quot;Rajdhani&quot;, sans-serif;
+                      font-size: 22px;
+                      font-weight: 700;
+                    "
+                  >
+                    메달 45
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 20px">
+            <section
+              style="
+                flex: 1 1 400px;
+                min-width: 0;
+                border: 1px solid #1e2c3d;
+                background: #0d1520;
+                padding: 20px;
+              "
+            >
+              <h2
+                style="
+                  margin: 0 0 16px;
+                  font-family: &quot;Rajdhani&quot;, sans-serif;
+                  font-size: 20px;
+                  letter-spacing: 2px;
+                  color: #f2f6fa;
+                "
+              >
+                진행 중인 미션
+              </h2>
+              <div style="display: flex; flex-direction: column; gap: 10px">
+                <sc-for list="{{missions}}" as="m" hint-placeholder-count="4">
+                  <div
+                    style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; background: #070B12; border-left: 3px solid {{m.color}}"
+                  >
+                    <div>
+                      <div style="font-size: 14px; font-weight: 500">
+                        {{m.title}}
+                      </div>
+                      <div style="font-size: 12px; color: #8a9bb0">
+                        {{m.planet}}
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: #b7c4d3;
+                        white-space: nowrap;
+                      "
+                    >
+                      {{m.diff}}
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+
+            <section
+              style="
+                flex: 1 1 400px;
+                min-width: 0;
+                border: 1px solid #1e2c3d;
+                background: #0d1520;
+                padding: 20px;
+              "
+            >
+              <h2
+                style="
+                  margin: 0 0 16px;
+                  font-family: &quot;Rajdhani&quot;, sans-serif;
+                  font-size: 20px;
+                  letter-spacing: 2px;
+                  color: #f2f6fa;
+                "
+              >
+                업데이트 내역
+              </h2>
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{updates}}" as="u" hint-placeholder-count="4">
+                  <div style="display: flex; gap: 14px">
+                    <div
+                      style="
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: #4fd1e8;
+                        min-width: 44px;
+                      "
+                    >
+                      {{u.date}}
+                    </div>
+                    <div>
+                      <div style="font-size: 14px; font-weight: 500">
+                        {{u.title}}
+                      </div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          color: #8a9bb0;
+                          line-height: 1.5;
+                        "
+                      >
+                        {{u.desc}}
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"accent":{"editor":"color","default":"#FFD23F","options":["#FFD23F","#4FD1E8","#FF8A3D"]},"$preview":{"width":1440,"height":1180}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      const c = { T: '#F5B76A', A: '#FF6B6B', I: '#B5A6FF' };
+      const hover = (this.state || {}).hover;
+      // x, y: position in the 640×380 map, as %
+      const P = [
+      { id: 'hellmire', name: 'Hellmire', faction: '테르미니드', sector: 'Draco', status: '해방 중', pct: 78, players: '52,300', rate: '+2.1%', hz: ['fireTornado', 'heat'], x: 73.4, y: 28.9, big: true, color: c.T },
+      { id: 'estanu', name: 'Estanu', faction: '테르미니드', sector: 'Draco', status: '방어 중', isDef: true, invasion: 18, pct: 58, players: '21,040', rate: '+3.1%/h', enemyPct: 41, enemyRate: '+2.2%/h', timeLeft: '23:50:11', from: 'Hellmire', outlook: '우세 · 방어 성공 예상', outlookColor: '#5BD68A', hz: ['spore', 'cold'], x: 84.4, y: 57.9, color: c.T },
+      { id: 'malevelon', name: 'Malevelon Creek', faction: '오토마톤', sector: 'Severin', status: '주요 명령 · 해방 중', pct: 62, players: '84,210', rate: '+1.8%', hz: ['fog', 'incineration'], x: 23.4, y: 34.2, big: true, color: c.A },
+      { id: 'ubanea', name: 'Ubanea', faction: '오토마톤', sector: 'Severin', status: '방어 중', isDef: true, invasion: 24, hz: ['ion', 'jet'], pct: 34, players: '33,870', rate: '+2.4%/h', enemyPct: 52, enemyRate: '+2.6%/h', timeLeft: '18:42:07', from: 'Malevelon Creek', outlook: '위험 · 속도 부족', outlookColor: '#FF6B6B', x: 17.2, y: 65.8, color: c.A },
+      { id: 'calypso', name: 'Calypso', faction: '일루미네이트', sector: '[섹터]', status: '해방 중', pct: 21, players: '23,460', rate: '+0.4%', hz: ['meteor'], x: 54.7, y: 86.8, color: c.I }
+      ];
+      // env = 환경 효과, enemy = 적 변종 (colored by the planet's faction)
+      const H = {
+      fireTornado: { kind: 'env', name: '화염 토네이도', desc: '불타는 토네이도가 전장을 휩쓸며 닿으면 화상을 입습니다.' },
+      heat: { kind: 'env', name: '극심한 열기', desc: '무기가 더 빨리 과열됩니다.' },
+      cold: { kind: 'env', name: '극한의 추위', desc: '무기의 열 누적이 줄어듭니다.' },
+      fog: { kind: 'env', name: '짙은 안개', desc: '시야 거리가 크게 줄어듭니다.' },
+      ion: { kind: 'env', name: '이온 폭풍', desc: '주기적으로 스트라타젬 호출이 차단됩니다.' },
+      meteor: { kind: 'env', name: '유성우', desc: '유성이 떨어져 주변에 피해를 줍니다.' },
+      spore: { kind: 'enemy', name: '스포어 버스트 변종', desc: '포자를 내뿜는 테르미니드가 출현해 시야를 가립니다.' },
+      incineration: { kind: 'enemy', name: '소각 군단', desc: '화염 무기로 무장한 오토마톤 부대가 출현합니다.' },
+      jet: { kind: 'enemy', name: '제트 여단', desc: '제트팩을 장착한 오토마톤 부대가 출현합니다.' }
+      };
+      const planets = P.map((p) => {
+      const right = p.x > 60;
+      return {
+      ...p,
+      left: p.x + '%',
+      top: p.y + '%',
+      glow: p.big ? '34px' : '24px',
+      aria: p.name + (p.isDef ? ' 방어전, 방어 진행도 ' : ' 해방도 ') + p.pct + '%',
+      labelTf: right ? 'translate(16px, -50%)' : 'translate(calc(-100% - 16px), -50%)',
+      tipTf: (right ? 'translate(calc(-100% - 28px), ' : 'translate(28px, ') + (p.y > 60 ? '-85%)' : '-15%)'),
+      defTf: right ? 'translate(calc(-100% - 28px), -50%)' : 'translate(28px, -50%)',
+      hazards: (p.hz || []).map((k) => ({ ...H[k], kindLabel: H[k].kind === 'env' ? '환경' : '적 변종', color: H[k].kind === 'env' ? '#9BE6F3' : p.color })),
+      active: hover === p.id,
+      on: () => this.setState({ hover: p.id }),
+      off: () => this.setState({ hover: null })
+      };
+      });
+      const tip = planets.find((p) => p.active) || null;
+      return {
+      accent: this.props.accent ?? '#FFD23F',
+      planets,
+      tip: tip || {},
+      hasLibTip: !!tip && !tip.isDef,
+      hasDefTip: !!tip && !!tip.isDef,
+      missions: [
+      { title: '대기 정제 시설 파괴', planet: 'Malevelon Creek', diff: 'LV 7 · 12분', color: c.A },
+      { title: 'ICBM 발사', planet: 'Ubanea', diff: 'LV 6 · 25분', color: c.A },
+      { title: '둥지 소탕', planet: 'Hellmire', diff: 'LV 8 · 18분', color: c.T },
+      { title: '민간인 대피', planet: 'Calypso', diff: 'LV 5 · 31분', color: c.I }
+      ],
+      updates: [
+      { date: '10.24', title: '패치 노트 [버전]', desc: '주 무기 밸런스 조정 및 안정성 개선' },
+      { date: '10.18', title: '신규 전쟁 채권', desc: '[채권 이름] 출시 — 신규 아머·스트라타젬' },
+      { date: '10.11', title: '핫픽스', desc: '매칭 오류 및 크래시 수정' },
+      { date: '10.03', title: '커뮤니티 이벤트', desc: '[이벤트 내용] 진행' }
+      ]
+      };
+      }
+      }
+    </script>
+  </body>
+</html>

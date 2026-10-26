@@ -26,6 +26,15 @@ P2 환경 구축 후 채운다 (dev, build, lint, typecheck, test, 단일 테스
 
 P2 이후 채운다 (데이터 소스 → 수집 → DB → 화면으로 흐르는 경로, 핵심 모듈).
 
+## UI·디자인 시스템
+
+화면은 **Tactical HUD** 디자인 시스템을 따른다. UI 작업 전에 [docs/design-system/README.md](docs/design-system/README.md)를 읽는다.
+
+- 토큰과 컴포넌트 클래스(`.hd-*`)는 `src/styles/hud.css` 하나가 출처다. 색·글꼴을 하드코딩하지 않고 토큰(Tailwind 유틸리티 `bg-panel`, `text-subtle`, `text-accent` 등 또는 `var(--color-*)`)을 쓴다.
+- 다크 테마 하나, 직각 모서리, 강조색은 `accent`(노랑) 하나. 세력 색은 세력 표시에만, `info`는 방어전에만.
+- 해방 상태는 패널이 아니라 지도 행성의 툴팁으로 보여준다(해방 툴팁 / 방어 툴팁 두 종류). 구성은 README의 툴팁 절을 따른다.
+- 확정 시안 원본은 `docs/design-system/reference/dashboard.dc.html` (참고용, 그대로 실행하지 않음).
+
 ## 응답·문서 언어
 
 - Claude 응답, 문서(`docs/`), 커밋 메시지는 한국어로 쓴다.
@@ -56,6 +65,7 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | `docs/research/*.md` | P1 조사 결과. 소스마다 SRS §5의 표준 표를 채운다 |
 | `docs/adr/NNNN-<slug>.md` | 결정 기록. `0000-template.md` 형식을 따른다 |
 | `docs/archive/` | 비활성화한 에이전트 등 보관물 |
+| `docs/design-system/` | UI 디자인 시스템 명세와 시안 원본 |
 
 ## 데이터 수집 규칙
 
