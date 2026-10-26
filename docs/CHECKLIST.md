@@ -98,13 +98,13 @@
 - [x] E-03 `.env.example` 작성 (DATABASE_URL, DIRECT_URL, CRON_SECRET, X_BEARER_TOKEN)
 - [x] E-04 `/api/health` 라우트 (로컬 DB 정상 200, DB 중단 시 503 확인)
 - [x] E-04 외부 API 1건 호출 스모크 테스트 (`pnpm test:smoke`, Arrowhead WarID)
-- [x] E-05 GitHub Actions CI (format:check → lint → typecheck → test → build). 깨끗한 작업 트리에서 로컬 재현 통과, GitHub 실행은 푸시 후
+- [x] E-05 GitHub Actions CI (format:check → lint → typecheck → test → build). GitHub Actions 통과 (PR #1)
 - [x] E-06 훅 실동작 확인 (편집 시 포맷·린트, 턴 종료 시 빌드: 통과·타입 오류 차단 모두 확인)
 - [x] E-06 CLAUDE.md에 명령어·아키텍처 갱신
 - [ ] E-07 첫 Preview 배포
 
 ### P2 완료 기준
 - [x] 로컬 `pnpm build` 통과
-- [ ] CI 녹색
+- [x] CI 녹색 (PR #1, run 40280731440, 2026-10-26)
 - [ ] Preview 배포 URL 확보
 - [x] 훅이 실제로 포맷·린트·빌드를 수행한다
