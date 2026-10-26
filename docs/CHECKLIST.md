@@ -1,6 +1,6 @@
 # 체크리스트
 
-현재 단계: P1
+현재 단계: P2
 
 요구사항 상세는 [SRS.md](SRS.md)를 따른다. 각 항목 앞의 ID는 SRS 요구사항 ID다.
 단계 끝의 **완료 기준**을 모두 만족해야 다음 단계로 넘어가며, 넘어갈 때 위의 `현재 단계` 줄을 갱신한다.
@@ -55,35 +55,37 @@
 ## P1 — 자료조사
 
 ### 게임 데이터 API
-- [ ] R-01 Arrowhead 공개 엔드포인트 호출·스키마 기록 (WarSeason Status, WarInfo, NewsFeed, Assignment)
-- [ ] R-01 커뮤니티 API(`api.helldivers2.dev`) 호출·필수 헤더·레이트리밋 기록
-- [ ] R-01 기타 커뮤니티 API 탐색
-- [ ] R-01 핵심 기능(전쟁 현황·MO·통계) ↔ 엔드포인트 매핑표 작성
+- [x] R-01 Arrowhead 공개 엔드포인트 호출·스키마 기록 (WarSeason Status, WarInfo, NewsFeed, Assignment)
+- [x] R-01 커뮤니티 API(`api.helldivers2.dev`) 호출·필수 헤더·레이트리밋 기록
+- [x] R-01 기타 커뮤니티 API 탐색
+- [x] R-01 핵심 기능(전쟁 현황·MO·통계) ↔ 엔드포인트 매핑표 작성
 
 ### 뉴스/SNS
-- [ ] R-02 Steam Web API (뉴스, 동접자) 호출 확인
-- [ ] R-02 Steam RSS, 게임 내 디스패치(NewsFeed) 확인
-- [ ] R-02 X: 공식 API 요금·한도 조사
-- [ ] R-02 X: 비공식 스크래핑 방식 조사 + Playwright 실측 + 약관·차단 리스크 정리
-- [ ] R-02 Reddit API, Discord 공지 채널 팔로우+봇, YouTube RSS 조사
+- [x] R-02 Steam Web API (뉴스, 동접자) 호출 확인
+- [x] R-02 Steam RSS, 게임 내 디스패치(NewsFeed) 확인
+- [x] R-02 X: 공식 API 요금·한도 조사
+- [x] R-02 X: 비공식 스크래핑 방식 조사 + Playwright 실측 + 약관·차단 리스크 정리
+- [x] R-02 Reddit API, Discord 공지 채널 팔로우+봇, YouTube RSS 조사
 
 ### 인프라
-- [ ] R-03 Vercel Marketplace DB 비교표 (무료 한도, 드라이버, 시계열 적합성, ORM)
-- [ ] R-03 Vercel Hobby Cron 한도 재확인 + 외부 스케줄러 비교 (GitHub Actions, QStash, pg_cron 등)
-- [ ] R-03 캐싱 전략 정리 (ISR, `revalidate`, 데이터 캐시)
+- [x] R-03 Vercel Marketplace DB 비교표 (무료 한도, 드라이버, 시계열 적합성, ORM)
+- [x] R-03 Vercel Hobby Cron 한도 재확인 + 외부 스케줄러 비교 (GitHub Actions, QStash, pg_cron 등)
+- [x] R-03 캐싱 전략 정리 (ISR, `revalidate`, 데이터 캐시)
 
 ### 결정·정리
-- [ ] R-04 ADR: 게임 데이터 소스 채택
-- [ ] R-04 ADR: 뉴스/SNS 소스 채택 (스크래핑 채택 시 리스크 대응 포함)
-- [ ] R-04 ADR: DB + ORM 선정
-- [ ] R-04 ADR: 스케줄러 선정
-- [ ] R-05 `source-researcher`를 `docs/archive/agents/`로 이동
+- [x] R-04 ADR: 게임 데이터 소스 채택
+- [x] R-04 ADR: 뉴스/SNS 소스 채택 (스크래핑 채택 시 리스크 대응 포함)
+- [x] R-04 ADR: DB + ORM 선정
+- [x] R-04 ADR: 스케줄러 선정
+- [x] R-05 `source-researcher`를 `docs/archive/agents/`로 이동
+- [x] R-06 SRS v2(대시보드 기능 명세) 초안 작성 — `docs/SRS-v2.md`
 
 ### P1 완료 기준
-- [ ] 핵심 기능 4개 각각에 채택 소스가 1개 이상 있다
-- [ ] DB·ORM·스케줄러 ADR이 확정되었다
-- [ ] `source-researcher`가 비활성화되었다
-- [ ] SRS v2(대시보드 기능 명세) 작성 착수 여부를 결정했다
+- [x] 핵심 기능 4개 각각에 채택 소스가 1개 이상 있다
+- [x] DB·ORM·스케줄러 ADR이 확정되었다
+- [x] `source-researcher`가 비활성화되었다
+- [x] SRS v2(대시보드 기능 명세) 작성 착수 여부를 결정했다 (P2 전에 작성, 2026-10-26)
+- [x] SRS v2 초안을 사용자가 검토·승인했다 (2026-10-26)
 
 ## P2 — 환경 구축
 

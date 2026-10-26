@@ -51,6 +51,7 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | 위치 | 내용 |
 | --- | --- |
 | `docs/SRS.md` | 요구사항 명세. §9 상태표는 `srs-sync`가 갱신 |
+| `docs/SRS-v2.md` | 대시보드 기능 명세 (F-xx 기능, D-xx 수집, Q-xx 비기능) |
 | `docs/CHECKLIST.md` | 단계별 체크리스트. `- [ ]` / `- [x]` |
 | `docs/research/*.md` | P1 조사 결과. 소스마다 SRS §5의 표준 표를 채운다 |
 | `docs/adr/NNNN-<slug>.md` | 결정 기록. `0000-template.md` 형식을 따른다 |
@@ -69,7 +70,7 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | 구성 | 위치 | 비고 |
 | --- | --- | --- |
 | Skill | `.claude/skills/srs-sync/` | 체크리스트·SRS 상태표·ADR 갱신 |
-| Subagents | `.claude/agents/` | `source-researcher`(P1 임시), `infra-researcher`, `code-reviewer` |
+| Subagents | `.claude/agents/` | `infra-researcher`, `code-reviewer` (`source-researcher`는 P1 후 `docs/archive/agents/`로 보관) |
 | Hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | 인코딩 검사, 포맷·린트, 턴 종료 빌드, 세션 시작 체크리스트 알림 |
 | MCP | `.mcp.json` (Playwright) + 사용자 플러그인/커넥터 (context7, Vercel) | 플러그인으로 있는 서버는 `.mcp.json`에 중복 등록하지 않는다 |
 | GitHub | `gh` CLI | 이슈·PR·Actions 확인은 `gh`로 한다. GitHub MCP 플러그인은 쓰지 않는다 |
