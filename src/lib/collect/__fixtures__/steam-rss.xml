@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated on Mon, 26 Oct 2026 00:11:09 -0700 -->
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <atom:link href="https://store.steampowered.com/news/app/553850/" rel="self" type="application/rss+xml" />
+    <title>553850 RSS 피드</title>
+    <link><![CDATA[https://store.steampowered.com/news/app/553850/]]></link>
+    <description><![CDATA[553850용 이벤트 및 공지]]></description>
+    <language>en-us</language>
+    <generator>Steam 뉴스 RSS</generator>
+    <item>
+      <title>Devoid of Liberty: 7.2.1</title>
+      <description>&lt;p class=&quot;bb_paragraph&quot;&gt;This hotfix aims to resolve one of the main crashes we have seen. &lt;/p&gt;&lt;p class=&quot;bb_paragraph&quot;&gt;&lt;/p&gt;&lt;div class=&quot;bb_h3&quot;&gt;🔧 &lt;b&gt;Fixes&lt;/b&gt;&lt;/div&gt;&lt;p class=&quot;bb_paragraph&quot;&gt;&lt;b&gt;Crash Fixes</description>
+      <link><![CDATA[https://store.steampowered.com/news/app/553850/view/708912427613295258]]></link>
+      <pubDate>Thu, 22 Oct 2026 12:00:04 +0000</pubDate>
+      <guid isPermaLink="true">https://store.steampowered.com/news/app/553850/view/708912427613295258</guid>
+    </item>
+    <item>
+      <title>자유의 공백: 7.2.0</title>
+      <description>&lt;p class=&quot;bb_paragraph&quot;&gt;&lt;i&gt;&lt;b&gt;*** 슈퍼지구 하이 커맨드로부터의 우선전문 수신***&lt;/b&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;슈퍼지구에서 기쁜 마음으로 최전선의 헬다이버를 위한 최신 변경 사항을 알려드립니다. &lt;b&gt;Easy Anti-Cheat 도입, 권위의 가늠자 전쟁 채권 출시, 무기 및 스트라타젬 개선 등&lt;/b&gt;, 온 가족이 즐길 수 있는 내용을 준비했습니다!&lt;/p&gt;&lt;div class=&q</description>
+      <link><![CDATA[https://store.steampowered.com/news/app/553850/view/715666559007196081]]></link>
+      <pubDate>Tue, 20 Oct 2026 09:01:51 +0000</pubDate>
+      <guid isPermaLink="true">https://store.steampowered.com/news/app/553850/view/715666559007196081</guid>
+      <enclosure url="https://clan.akamai.steamstatic.com/images/44156989/478d3448c1e6ca32cd3ea2501b053e7c2479506b.png" length="0" type="image/png" />
+    </item>
+    <item>
+      <title>Changing anti-cheat in HELLDIVERS 2</title>
+      <description>&lt;p class=&quot;bb_paragraph&quot;&gt;Greetings Helldivers,&lt;/p&gt;&lt;p class=&quot;bb_paragraph&quot;&gt;&lt;/p&gt;&lt;p class=&quot;bb_paragraph&quot;&gt;Today, we want to talk about an upcoming change to our anti-cheat, answer some questions we have seen arise in the community around modding</description>
+      <link><![CDATA[https://store.steampowered.com/news/app/553850/view/713415392836453548]]></link>
+      <pubDate>Tue, 20 Oct 2026 06:00:19 +0000</pubDate>
+      <guid isPermaLink="true">https://store.steampowered.com/news/app/553850/view/713415392836453548</guid>
+      <enclosure url="https://clan.akamai.steamstatic.com/images/44156989/ae7357309461a76d9f1df670303e2f5d65158952.jpg" length="0" type="image/jpeg" />
+    </item>
+  </channel>
+</rss>

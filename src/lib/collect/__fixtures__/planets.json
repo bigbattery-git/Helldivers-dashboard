@@ -1,0 +1,74 @@
+{
+  "0": {
+    "name": "Super Earth",
+    "sector": "Sol",
+    "biome": "super_earth",
+    "environmentals": ["none"],
+    "names": {
+      "en-US": "SUPER EARTH",
+      "en-GB": "SUPER EARTH",
+      "pt-BR": "SUPERTERRA",
+      "de-DE": "ÜBER-ERDE",
+      "es-ES": "SUPERTIERRA",
+      "fr-FR": "SUPER-TERRE",
+      "it-IT": "SUPER TERRA",
+      "ja-JP": "スーパーアース",
+      "ko-KO": "슈퍼지구",
+      "ms-MY": "SUPERTIERRA",
+      "pl-PL": "SUPER ZIEMIA",
+      "pt-PT": "SUPER TERRA",
+      "ru-RU": "СУПЕР-ЗЕМЛЯ",
+      "zh-Hant": "超級地球"
+    },
+    "type": "super_earth",
+    "weather_effects": ["normal_temp", "rainstorms"]
+  },
+  "1": {
+    "name": "Klen Dahth II",
+    "sector": "Altus",
+    "biome": "sandy_base",
+    "environmentals": ["sandstorms"],
+    "names": {
+      "en-US": "KLEN DAHTH II",
+      "en-GB": "KLEN DAHTH II",
+      "pt-BR": "KLEN DAHTH II",
+      "de-DE": "KLEN DAHTH II",
+      "es-ES": "KLEN DAHTH II",
+      "fr-FR": "KLEN DAHTH II",
+      "it-IT": "KLEN DAHTH II",
+      "ja-JP": "クレンダース II",
+      "ko-KO": "클렌 다흐스 II",
+      "ms-MY": "KLEN DAHTH II",
+      "pl-PL": "KLEN DAHTH II",
+      "pt-PT": "KLEN DAHTH II",
+      "ru-RU": "КЛЕН ДАХТ II",
+      "zh-Hant": "克連達斯II"
+    },
+    "type": "desert",
+    "weather_effects": ["intense_heat", "extreme_cold", "sandstorms"]
+  },
+  "2": {
+    "name": "Pathfinder V",
+    "sector": "Altus",
+    "biome": "moor_baseplanet",
+    "environmentals": ["none"],
+    "names": {
+      "en-US": "PATHFINDER V",
+      "en-GB": "PATHFINDER V",
+      "pt-BR": "VANGUARDA V",
+      "de-DE": "PATHFINDER V",
+      "es-ES": "EXPLORADOR V",
+      "fr-FR": "CHERCHEVOIE V",
+      "it-IT": "PATHFINDER V",
+      "ja-JP": "パスファインダー V",
+      "ko-KO": "패스파인더 V",
+      "ms-MY": "PATHFINDER V",
+      "pl-PL": "TROPICIEL V",
+      "pt-PT": "PATHFINDER V",
+      "ru-RU": "СЛЕДОПЫТ V",
+      "zh-Hant": "探路者V"
+    },
+    "type": "moor",
+    "weather_effects": ["normal_temp", "rainstorms"]
+  }
+}

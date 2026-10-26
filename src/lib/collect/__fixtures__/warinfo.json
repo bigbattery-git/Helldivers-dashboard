@@ -1,0 +1,58 @@
+{
+  "warId": 801,
+  "startDate": 1706040313,
+  "endDate": 1833653095,
+  "layoutVersion": 716,
+  "minimumClientVersion": "0.3.0",
+  "planetInfos": [
+    {
+      "index": 0,
+      "settingsHash": 897386910,
+      "planetNameId32": 0,
+      "planetBiomeId32": 0,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "waypoints": [],
+      "sector": 0,
+      "maxHealth": 1000000,
+      "disabled": false,
+      "initialOwner": 1
+    },
+    {
+      "index": 1,
+      "settingsHash": 3621417917,
+      "planetNameId32": 0,
+      "planetBiomeId32": 0,
+      "position": {
+        "x": 0.05373042,
+        "y": 0.10565466
+      },
+      "waypoints": [],
+      "sector": 1,
+      "maxHealth": 1000000,
+      "disabled": false,
+      "initialOwner": 1
+    },
+    {
+      "index": 2,
+      "settingsHash": 2543303604,
+      "planetNameId32": 0,
+      "planetBiomeId32": 0,
+      "position": {
+        "x": 0.04664221,
+        "y": 0.16758725
+      },
+      "waypoints": [],
+      "sector": 1,
+      "maxHealth": 1000000,
+      "disabled": false,
+      "initialOwner": 1
+    }
+  ],
+  "homeWorlds": [],
+  "capitalInfos": [],
+  "planetPermanentEffects": [],
+  "planetRegions": []
+}
