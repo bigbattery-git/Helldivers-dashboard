@@ -71,7 +71,8 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | Skill | `.claude/skills/srs-sync/` | 체크리스트·SRS 상태표·ADR 갱신 |
 | Subagents | `.claude/agents/` | `source-researcher`(P1 임시), `infra-researcher`, `code-reviewer` |
 | Hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | 인코딩 검사, 포맷·린트, 턴 종료 빌드, 세션 시작 체크리스트 알림 |
-| MCP | `.mcp.json` (Playwright) + 사용자 플러그인/커넥터 (context7, Vercel, GitHub) | 플러그인으로 있는 서버는 `.mcp.json`에 중복 등록하지 않는다 |
+| MCP | `.mcp.json` (Playwright) + 사용자 플러그인/커넥터 (context7, Vercel) | 플러그인으로 있는 서버는 `.mcp.json`에 중복 등록하지 않는다 |
+| GitHub | `gh` CLI | 이슈·PR·Actions 확인은 `gh`로 한다. GitHub MCP 플러그인은 쓰지 않는다 |
 
 - 포맷·린트 훅과 빌드 훅은 `node_modules`가 없으면 아무 일도 하지 않는다 (P2부터 동작).
 - `.env` 계열 파일은 `permissions.deny`로 Read/Edit가 막혀 있다. 우회해서 읽지 않는다.

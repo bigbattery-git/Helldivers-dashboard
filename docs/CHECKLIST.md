@@ -36,7 +36,10 @@
 ### MCP
 - [x] H-06 기존 플러그인/커넥터와 중복 여부 확인 (context7, GitHub, Vercel)
 - [x] H-06 `.mcp.json` 작성 (Playwright 버전 고정, Windows `cmd /c` 래핑, 필요 시 context7·Vercel)
-- [ ] H-06 **[사용자]** context7·GitHub MCP 인증 (`/mcp`)
+- [x] H-06 Vercel 커넥터 연결 확인
+- [x] H-06 GitHub 연동은 플러그인 대신 `gh` CLI 사용 (bigbattery-git 로그인, repo·workflow 권한 확인. 플러그인 로그인이 서비스 오류로 실패해 변경)
+- [x] H-06 Playwright `.mcp.json` 서버 사전 승인 (`.claude/settings.local.json`의 `enabledMcpjsonServers`)
+- [x] H-06 **[사용자]** context7 플러그인 로그인 (`/mcp`)
 
 ### 기타
 - [x] H-07 `.editorconfig` 작성 (LF, UTF-8, 2칸)
@@ -46,7 +49,7 @@
 - [ ] CRLF 또는 BOM이 있는 파일을 쓰면 경고가 발생한다
 - [ ] `.env` 파일 읽기 시도가 차단된다
 - [ ] 서브에이전트 3종과 `srs-sync` 스킬이 목록에 노출된다
-- [ ] MCP 4종이 연결 상태로 확인된다
+- [ ] MCP 3종(context7·Vercel·Playwright)이 연결 상태로 확인되고 `gh` CLI가 로그인돼 있다
 - [x] 하네스 파일 커밋 완료
 
 ## P1 — 자료조사

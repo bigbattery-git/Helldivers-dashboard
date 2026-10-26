@@ -54,7 +54,7 @@
 | H-03 | **Subagents** 3종 정의 (아래 표) | `.claude/agents/*.md` |
 | H-04 | **Hooks** 4종 (아래 표). Windows 호환을 위해 Node 스크립트(`.mjs`)로 작성 | `.claude/settings.json`, `.claude/hooks/*.mjs` |
 | H-05 | **권한·비밀정보 보호**: `permissions.deny`에 `.env*`와 `.vercel/.env.*` 읽기/편집/쓰기 차단(`Edit` 규칙이 Write도 포함하며, `.env.example`은 열어둔다), `.gitignore`에 `.env*` 추가(`.env.example`은 예외) | `.claude/settings.json`, `.gitignore` |
-| H-06 | **MCP 서버**: context7, Vercel, Playwright, GitHub 사용 가능 상태로 구성 (아래 표) | `.mcp.json` |
+| H-06 | **MCP·GitHub 연동**: MCP 서버 context7, Vercel, Playwright를 사용 가능 상태로 구성하고, GitHub은 `gh` CLI로 연동 (아래 표) | `.mcp.json`, `.claude/settings.local.json` |
 | H-07 | **에디터 설정**: LF, UTF-8, 들여쓰기 2칸 | `.editorconfig` |
 
 ### H-03 Subagents
@@ -74,14 +74,14 @@
 | Stop | 이번 턴에 TS/JS 변경이 있으면 `pnpm tsc --noEmit && pnpm build` 실행, 실패 시 오류 요약을 Claude에게 반환해 수정 유도. `stop_hook_active`로 무한 루프 방지 | P2부터 동작 (그 전엔 no-op) |
 | SessionStart | `docs/CHECKLIST.md`에서 현재 단계와 미완료 항목 상위 N개를 컨텍스트로 주입 | 즉시 |
 
-### H-06 MCP
+### H-06 MCP·GitHub 연동
 
-| 서버 | 용도 | 구성 방식 |
+| 대상 | 용도 | 구성 방식 |
 | --- | --- | --- |
-| context7 | Next.js·라이브러리 최신 문서 조회 | `.mcp.json` 또는 기존 플러그인. 현재 미인증 → 사용자 `/mcp` 인증 필요 |
-| Vercel | 배포·로그·환경변수, Vercel 문서 검색 | `.mcp.json` (HTTP). 이미 연결된 커넥터와 중복 여부 확인 |
-| Playwright | 크롤링 가능성 실측, E2E 검증 | `.mcp.json` — Windows는 `cmd /c npx @playwright/mcp@<고정 버전>` |
-| GitHub | 이슈/PR 관리 | 기존 플러그인 또는 `gh` CLI. 현재 미인증 → 사용자 인증 필요 |
+| context7 | Next.js·라이브러리 최신 문서 조회 | 사용자 플러그인 (`/mcp`로 로그인 완료) |
+| Vercel | 배포·로그·환경변수, Vercel 문서 검색 | claude.ai 커넥터 (연결됨) |
+| Playwright | 크롤링 가능성 실측, E2E 검증 | `.mcp.json` — `cmd /c npx -y @playwright/mcp@0.0.83`, `.claude/settings.local.json`으로 사전 승인 |
+| GitHub | 이슈·PR 관리, Actions 확인 | `gh` CLI (로그인됨). GitHub MCP 플러그인은 로그인이 서비스 오류로 실패해 쓰지 않기로 함 |
 
 원칙: 플러그인으로 이미 제공되는 서버는 `.mcp.json`에 중복 등록하지 않는다. 버전은 고정한다.
 
@@ -146,6 +146,6 @@
 
 | 단계 | 상태 | 진행률 | 비고 |
 | --- | --- | --- | --- |
-| P0 하네스 구축 | 진행 중 | 77% | 남은 것: context7·GitHub MCP 인증(사용자), 새 세션에서 완료 기준 확인 |
+| P0 하네스 구축 | 진행 중 | 83% | 남은 것: 새 세션에서 완료 기준 확인 (훅, `.env` 차단, 에이전트·스킬 노출, Playwright 연결) |
 | P1 자료조사 | 대기 | 0% | |
 | P2 환경 구축 | 대기 | 0% | |
