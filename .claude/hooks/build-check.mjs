@@ -21,7 +21,7 @@ const attempts = input.stop_hook_active && existsSync(attemptsFile)
   : 0;
 
 const steps = [];
-if (existsSync(join(projectDir, "tsconfig.json"))) steps.push(["타입 검사", "pnpm exec tsc --noEmit"]);
+if (existsSync(join(projectDir, "tsconfig.json"))) steps.push(["타입 검사", "pnpm typecheck"]);
 steps.push(["빌드", "pnpm build"]);
 
 for (const [label, command] of steps) {

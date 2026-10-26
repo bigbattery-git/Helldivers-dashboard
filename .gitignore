@@ -9,8 +9,14 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma client (generated on install)
+src/generated/
+
 # vercel
 .vercel/
+
+# secrets
+*.pem
 
 # env (keep the example)
 .env*

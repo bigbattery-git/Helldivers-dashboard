@@ -1,0 +1,5 @@
+# docs and harness keep their hand-written layout
+*.md
+.claude/
+pnpm-lock.yaml
+pnpm-workspace.yaml
