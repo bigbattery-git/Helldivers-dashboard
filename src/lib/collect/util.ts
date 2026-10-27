@@ -15,6 +15,8 @@ export const warTimeToDate = (offsetSec: number, warTime: number) =>
   new Date((offsetSec + warTime) * 1000);
 
 export const hasHangul = (text: string) => /[가-힣]/.test(text);
+// Nothing to translate: Korean already, or empty.
+export const isKorean = (text: string) => !text.trim() || hasHangul(text);
 
 // A failed source. `extra` goes to Sentry with the error (ADR 0005).
 export class SourceError extends Error {

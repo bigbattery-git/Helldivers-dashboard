@@ -114,7 +114,7 @@ model Assignment {
   // Machine translation of English title/briefing (ADR 0006); null once official Korean arrives.
   titleKo     String?  @map("title_ko")
   briefingKo  String?  @map("briefing_ko")
-  // "official" | "machine"; null while English text waits for translation
+  // "official" | "machine" | "failed" (Gemini could not answer); null while English text waits for translation
   translation String?
   tasks       Json
   rewards     Json
@@ -145,7 +145,7 @@ model NewsItem {
   bodyEn      String?  @map("body_en")
   titleKo     String?  @map("title_ko")
   bodyKo      String?  @map("body_ko")
-  // "official" | "machine" for the Korean text (ADR 0006); Steam leaves it null
+  // "official" | "machine" | "failed" for the Korean text (ADR 0006); Steam leaves it null
   translation String?
   url         String?
   publishedAt DateTime @map("published_at") @db.Timestamptz

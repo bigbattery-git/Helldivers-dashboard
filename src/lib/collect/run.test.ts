@@ -28,6 +28,7 @@ vi.mock("./x", () => ({
   checkDeletedX: vi.fn(async () => ({})),
 }));
 vi.mock("./translate", () => ({
+  TIMEOUT_MS: 15_000,
   translatePending: vi.fn(async () => ({})),
 }));
 
@@ -86,6 +87,29 @@ describe("optional sources (F-03-6, ADR 0006)", () => {
     expect(results.status).toMatchObject({ status: "ok" });
     expect(results.steamNews).toMatchObject({ status: "ok" });
     expect(results.translate).toMatchObject({ status: "ok" });
+  });
+
+  it("translates one item alone after a failed batch", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "k");
+    const { db, client } = fakeDb();
+    db.collectionRun.findFirst.mockResolvedValueOnce({
+      results: { translate: { status: "error" } },
+    });
+    await runCollection(client, now);
+    expect(translatePending).toHaveBeenCalledWith(client, now, true);
+  });
+
+  it("skips translation when the Gemini call would outlast the deadline", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("GEMINI_API_KEY", "k");
+    vi.mocked(collectStatus).mockReturnValueOnce(
+      new Promise((resolve) => setTimeout(() => resolve({} as never), 25_000)),
+    );
+    const done = runCollection(fakeDb().client, now);
+    await vi.advanceTimersByTimeAsync(25_000);
+    const { results } = await done;
+    expect(results.translate).toEqual({ status: "skipped", reason: "no time" });
+    expect(translatePending).not.toHaveBeenCalled();
   });
 
   it("checks X deletions once a day", async () => {

@@ -1,6 +1,12 @@
 import { z } from "zod";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
-import { fetchJson, hasHangul, SourceError, warTimeToDate } from "./util";
+import {
+  fetchJson,
+  hasHangul,
+  isKorean,
+  SourceError,
+  warTimeToDate,
+} from "./util";
 
 // Primary game data source (ADR 0001). Every call needs Accept-Language, Status errors without it.
 const BASE = "https://api.live.prod.thehelldiversgame.com/api";
@@ -483,13 +489,14 @@ export async function collectAssignments(ctx: CollectContext) {
 }
 
 // Official Korean replaces a machine translation; changed English drops it for the translate step (ADR 0006).
+// Official only when every field is Korean: a half-localized order still goes to the translate step.
 export function orderText(
   title: string,
   briefing: string,
   stored?: { title: string; briefing: string },
 ) {
   const reset = { titleKo: null, briefingKo: null };
-  if (hasHangul(title + briefing))
+  if (isKorean(title) && isKorean(briefing))
     return { title, briefing, ...reset, translation: "official" };
   return stored?.title === title && stored.briefing === briefing
     ? { title, briefing }
@@ -497,13 +504,15 @@ export function orderText(
 }
 
 // Dispatch text goes to the ko or en column by content, so a later translation fills ko.
-// Official Korean replaces a machine translation; changed English drops it (ADR 0006).
+// Official Korean replaces a machine translation; changed English drops it, or a failed one, for a new try (ADR 0006).
 export function dispatchText(
   message: string,
   stored?: { bodyEn: string | null; translation: string | null },
 ) {
   if (hasHangul(message)) return { bodyKo: message, translation: "official" };
-  return stored?.translation === "machine" && stored.bodyEn !== message
+  return stored &&
+    (stored.translation === "machine" || stored.translation === "failed") &&
+    stored.bodyEn !== message
     ? { bodyEn: message, bodyKo: null, translation: null }
     : { bodyEn: message };
 }
