@@ -10,7 +10,7 @@
 ## 1. 원칙
 
 - 화면은 DB만 읽는다(SRS v1 N-01). 외부 API는 수집 작업에서만 부른다.
-- **빌드는 DB에 접속하지 않는다**(CLAUDE.md). DB를 읽는 부분은 요청 시점에만 실행되게 한다(§3).
+- **CI·로컬 빌드는 DB에 접속하지 않는다**(CLAUDE.md). Vercel 빌드만 DB를 읽는다(§3, 2026-10-27 변경).
 - 서버 컴포넌트가 기본이다. 클라이언트 컴포넌트는 상호작용·현재 시각이 필요한 곳(지도 툴팁, 카운트다운, 지연 배지)에만 쓴다.
 - 새 의존성은 넣지 않는 것이 기본이다. 그래프는 서버에서 그리는 인라인 SVG로 한다(§6).
 
@@ -55,7 +55,7 @@ export async function getWarOverview() {
 
 - `POST /api/collect`가 `runCollection` 뒤에 위 태그를 `revalidateTag(tag, "max")`로 무효화한다(Route Handler에서 호출 가능). 15분 `revalidate`는 무효화가 빠졌을 때를 위한 안전망이다.
 - **데이터는 정적 껍데기(ISR)에 넣는다** (2026-10-27 정정). 서버리스에서는 `'use cache'`의 런타임 메모리 캐시가 요청 사이에 남지 않는다(`01-app/03-api-reference/01-directives/use-cache.md` "Serverless" 행). 그래서 `connection()`으로 요청 시점에 미루면 방문마다 함수 호출과 DB 조회가 생긴다(Q-01·Q-05에 불리). 대신 데이터 함수를 프리렌더 결과에 넣고, 수집이 `revalidateTag`로 껍데기를 다시 만들게 한다.
-- **빌드 중 DB 접속을 막는 방법**: 데이터 함수는 빌드 단계(`process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD`)에서 DB를 읽지 않고 빈 값을 돌려준다. 배포 직후 껍데기는 빈 상태이고, 다음 수집(최대 15분)의 `revalidateTag`나 15분 `revalidate`가 채운다. 기반 PR에서 DB를 끈 `pnpm build`와 로컬 `pnpm start`로 확인하고, Vercel에서의 동작은 배포 PR에서 다시 확인한다.
+- **빌드 중 DB 접속을 막는 방법**: 데이터 함수는 빌드 단계(`process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD`)에서 DB를 읽지 않고 빈 값을 돌려준다. 배포 직후 껍데기는 빈 상태이고, 다음 수집(최대 15분)의 `revalidateTag`나 15분 `revalidate`가 채운다. 기반 PR에서 DB를 끈 `pnpm build`와 로컬 `pnpm start`로 확인하고, Vercel에서의 동작은 배포 PR에서 다시 확인한다. **2026-10-27 변경**: 배포 직후 최대 15분 빈 화면이 보여서, Vercel 빌드(`VERCEL=1`)에서는 DB를 읽어 실데이터로 굽는다. CI·로컬 빌드는 그대로 빈 껍데기. 빌드 중 DB가 응답하지 않으면 그 배포만 실패하고 이전 배포가 유지된다.
 - 대안(필요해지면): 은하 상황을 15분보다 자주 보여 줘야 하면 TanStack Query로 클라이언트가 우리 API(DB만 읽음)를 폴링하는 방식을 검토한다 (사용자 의견 2026-10-27).
 - `/planets/[index]`: Cache Components에서는 `generateStaticParams`가 값을 하나 이상 돌려줘야 한다. DB 없이 줄 수 있는 `{ index: "0" }`(슈퍼지구)만 돌려주고 나머지는 첫 요청 때 만든다. 없는 index는 `notFound()`.
 - **현재 시각이 필요한 표시는 클라이언트에서 계산한다.** 캐시된 HTML은 만든 시각에 멈춰 있기 때문이다. 카운트다운(MO 만료, 방어 남은 시간)과 "데이터 지연" 배지(마지막 수집 후 30분, F-05-1)는 서버가 시각(ISO)만 넘기고 클라이언트 컴포넌트가 1초 또는 1분마다 다시 그린다.

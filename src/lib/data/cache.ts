@@ -12,7 +12,7 @@ export const TAGS = [
 // 15 minutes like the collector; tags refresh sooner, this is the safety net (Q-02).
 export const LIFE = { stale: 300, revalidate: 900, expire: 86_400 };
 
-// Prerender without a database (CLAUDE.md): the build bakes an empty shell,
-// and the first collection after deploy revalidates it with real data.
+// CI and local builds prerender without a database (CLAUDE.md) and bake an empty shell.
+// Vercel builds (`VERCEL=1`) read the database so a fresh deploy never serves that empty shell.
 export const isBuildPhase = () =>
-  process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
+  process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD && !process.env.VERCEL;

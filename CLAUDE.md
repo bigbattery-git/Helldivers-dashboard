@@ -24,7 +24,7 @@
 | 명령 | 내용 |
 | --- | --- |
 | `pnpm dev` | 개발 서버 (`http://localhost:4100`. 3000~3104는 다른 로컬 프로젝트가 써서 피한다) |
-| `pnpm build` | 프로덕션 빌드(`prisma generate` 후 `next build`. Vercel이 빌드 캐시로 설치를 건너뛰면 `postinstall`이 돌지 않아서). 빌드 중에는 DB에 접속하지 않는다 |
+| `pnpm build` | 프로덕션 빌드(`prisma generate` 후 `next build`. Vercel이 빌드 캐시로 설치를 건너뛰면 `postinstall`이 돌지 않아서). CI·로컬 빌드는 DB에 접속하지 않고 빈 화면을 굽는다. Vercel 빌드(`VERCEL=1`)만 DB를 읽어 배포 직후에도 실데이터가 나간다 |
 | `pnpm lint` / `pnpm format` / `pnpm format:check` | ESLint / Prettier (`*.md`, `.claude/`는 포맷 제외) |
 | `pnpm typecheck` | `next typegen` 후 `tsc --noEmit` |
 | `pnpm test` | 단위 테스트 (Vitest `unit` 프로젝트, `src/**/*.test.ts`) |
