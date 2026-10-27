@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StaleBadge } from "@/components/hud/StaleBadge";
 import type { LastCollection } from "@/lib/data/collection";
 import type { PlayerPoint } from "@/lib/data/stats";
@@ -68,8 +69,15 @@ export function PageHeader({
             {war ? `${war.totals.liberated} / ${war.totals.planets}` : "—"}
           </div>
         </div>
-        <div className="hd-stat">
-          <div className="hd-stat__label">STEAM PLAYERS</div>
+        {/* Entry to the stats page (SRS v4 §9). */}
+        <Link
+          href="/stats"
+          className="hd-stat block hover:border-muted focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent"
+        >
+          <div className="hd-stat__label">
+            STEAM PLAYERS <span aria-hidden="true">↗</span>
+            <span className="sr-only">, 통계 화면으로 이동</span>
+          </div>
           <div className="flex items-end gap-3">
             <div className="hd-stat__value">
               {latest === undefined ? "—" : formatNumber(latest)}
@@ -94,7 +102,7 @@ export function PageHeader({
               </svg>
             )}
           </div>
-        </div>
+        </Link>
         <div className="hd-stat">
           <div className="hd-stat__label">LAST UPDATE</div>
           <div className="hd-stat__value">

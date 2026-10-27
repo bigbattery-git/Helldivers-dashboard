@@ -10,8 +10,8 @@ import {
   labelOnRight,
   toMapPercent,
 } from "@/lib/hd/map";
-import { factionOf } from "@/lib/hd/terms";
-import { DefenseTooltip, factionStyle, LiberationTooltip } from "./MapTooltips";
+import { factionOf, factionStyle } from "@/lib/hd/terms";
+import { DefenseTooltip, LiberationTooltip } from "./MapTooltips";
 
 // Decorative stars in the 640x380 map well (copied from the design reference).
 const STARS = [
@@ -86,6 +86,12 @@ export function GalaxyMap({
             />
             방어전
           </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="text-accent">
+              ▲
+            </span>
+            주요 명령 대상
+          </li>
         </ul>
       </div>
 
@@ -134,11 +140,11 @@ export function GalaxyMap({
               <div key={f.index}>
                 <button
                   type="button"
-                  aria-label={
+                  aria-label={`${targets.has(f.index) ? "주요 명령 대상, " : ""}${
                     f.defense
                       ? `${f.name} 방어전, 방어 진행도 ${formatPercent(f.progress)}`
                       : `${f.name} 해방도 ${formatPercent(f.progress)}`
-                  }
+                  }`}
                   aria-describedby={open === f.index ? "map-tip" : undefined}
                   onMouseEnter={() => setOpen(f.index)}
                   onMouseLeave={() => setOpen(null)}
@@ -152,6 +158,7 @@ export function GalaxyMap({
                 >
                   <span className="hd-marker__glow" />
                   <span className="hd-marker__dot" />
+                  {targets.has(f.index) && <span className="hd-marker__mo" />}
                   {f.defense && <span className="hd-marker__def" />}
                   {open === f.index && <span className="hd-marker__ring" />}
                 </button>

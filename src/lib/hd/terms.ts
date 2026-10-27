@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 // Official Korean spellings, counted in the ko-KR NewsFeed (docs/research/game-api.md, 2026-10-27).
 // Screens and the machine-translation prompt share this table (ADR 0006).
 
@@ -21,6 +23,9 @@ export const factionColor = (id: number) => {
   const token = factionOf(id)?.token;
   return token ? `var(--color-${token})` : "var(--color-accent)";
 };
+
+export const factionStyle = (id: number) =>
+  ({ "--faction": factionColor(id) }) as CSSProperties;
 
 // English term -> official Korean, for translation and fixed UI copy.
 export const TERMS: Record<string, string> = {

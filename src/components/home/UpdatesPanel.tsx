@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { NewsEntry } from "@/lib/data/news";
 import { formatKst } from "@/lib/hd/format";
 import { kindLabel, newsPreview } from "@/lib/hd/news";
@@ -9,9 +10,17 @@ export function UpdatesPanel({ news }: { news: NewsEntry[] }) {
       aria-labelledby="updates-title"
       className="hd-panel flex-[1_1_400px]"
     >
-      <h2 id="updates-title" className="hd-panel__title">
-        업데이트 내역
-      </h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="updates-title" className="hd-panel__title">
+          업데이트 내역
+        </h2>
+        <Link
+          href="/news"
+          className="font-mono text-xs text-subtle hover:text-strong focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent"
+        >
+          전체 보기 →
+        </Link>
+      </div>
       {news.length === 0 && (
         <p className="text-sm text-subtle">아직 수집된 소식이 없습니다.</p>
       )}
