@@ -95,6 +95,7 @@ export async function getWarOverview() {
 | `revalidateTag` 호출 | `src/app/api/collect/route.ts` | 수집 성공·실패와 관계없이 끝나면 호출 |
 | X 수집 | `src/lib/collect/x.ts` (새 파일) | 사용자 ID `1654403648598802436` 고정, `since_id` = 마지막 저장 글 ID, `news_item.source = "x"`, 삭제 반영(ADR 0002, 개발자 정책). 키가 없으면 `skipped` |
 | 기계 번역 | `src/lib/collect/translate.ts` (새 파일) | ADR 0006. 마크업 태그 비교 실패 시 버리고 재시도. 모델 ID 환경변수 `GEMINI_MODEL` |
+| 커뮤니티 API 폴백 | `src/lib/collect/fallback.ts` (새 파일) | D-03, F-05-2. Arrowhead 소스가 실패한 항목만 `api.helldivers2.dev`로 받고 `collection_run`에 폴백 여부를 남긴다. 영어로만 오므로 화면에 "영어 원문"·출처 |
 | 스키마 | `prisma/schema.prisma` | `assignment.title_ko`·`briefing_ko`, `*.ko_source`(`official`/`machine`) |
 
 ## 8. PR 순서
