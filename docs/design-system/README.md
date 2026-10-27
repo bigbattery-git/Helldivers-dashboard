@@ -79,7 +79,7 @@ Tailwind 유틸리티 이름 기준 (`bg-*`, `text-*`, `border-*` 모두 같은 
 | StatTile | `.hd-stat`, `__label`, `__value(--accent/--info)` | 영어 라벨 + 큰 숫자, 최소 140px |
 | ProgressBar | `.hd-bar(--thick)`, `__fill` | 6px 기본, 주요 명령·방어/공세는 10px. 위에 `.hd-row`로 라벨과 % |
 | Row | `.hd-row`, `__value(--strong)` | 툴팁·패널의 라벨/값 한 줄 |
-| PlanetMarker | `.hd-marker(--major)`, `__glow`, `__dot`, `__def`, `__ring`, `__label` | 아래 참고 |
+| PlanetMarker | `.hd-marker(--major)`, `__glow`, `__dot`, `__mo`, `__def`, `__ring`, `__label` | 아래 참고. `__mo`는 주요 명령 직접 대상 행성의 강조색 ▲ (2026-10-27) |
 | HazardChip | `.hd-hazards`, `.hd-section-label`, `.hd-hazard`, `__name`, `__kind`, `__desc` | 환경 `--hz` 없음(info-soft), 적 변종 `--hz: var(--faction)` |
 | LiberationTooltip | `.hd-tip` + `__top/__title/__faction/__meta/__divider` | 아래 참고 |
 | DefenseTooltip | `.hd-tip.hd-tip--defense` + `__head/__banner/__body/__name-row/__kind/__desc/__foot`, `.hd-level`, `.hd-timer`, `.hd-outlook--good/--bad` | 아래 참고 |

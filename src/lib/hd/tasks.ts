@@ -24,6 +24,8 @@ export type TaskView = {
   // null when the task has no countable goal
   ratio: number | null;
   planetIndex: number | null;
+  // enemy faction id the task names, for chart colors
+  race: number | null;
 };
 
 export function describeTask(
@@ -82,6 +84,7 @@ export function describeTask(
     progress,
     ratio: goal ? Math.min(1, progress / goal) : null,
     planetIndex,
+    race: value(VT.race) || null,
   };
 }
 

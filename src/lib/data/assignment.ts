@@ -7,6 +7,7 @@ import {
   type Task,
   type TaskView,
 } from "@/lib/hd/tasks";
+import type { Point } from "@/lib/hd/series";
 import { isBuildPhase, LIFE } from "./cache";
 
 export type MajorOrder = {
@@ -56,6 +57,58 @@ export async function getAssignments(): Promise<MajorOrder[]> {
         ),
         rewards: (o.rewards as Reward[]).map(describeReward),
       };
+    }),
+  );
+}
+
+export type OrderSeries = {
+  id: string;
+  title: string;
+  tasks: { text: string; race: number | null; points: Point[] }[];
+};
+
+// Progress of each task of the current major orders over time (F-02-5).
+// Tasks without a countable goal have no line.
+export async function getAssignmentSeries(): Promise<OrderSeries[]> {
+  "use cache";
+  cacheLife(LIFE);
+  cacheTag("assignment");
+  if (isBuildPhase()) return [];
+  const db = getDb();
+  const last = await db.assignment.findFirst({
+    orderBy: { lastSeenAt: "desc" },
+    select: { lastSeenAt: true },
+  });
+  if (!last) return [];
+  const orders = await db.assignment.findMany({
+    where: { lastSeenAt: last.lastSeenAt },
+    orderBy: { startedAt: "asc" },
+  });
+  return Promise.all(
+    orders.map(async (o) => {
+      const snaps = await db.assignmentSnapshot.findMany({
+        where: { assignmentId: o.id },
+        orderBy: { slot: "asc" },
+      });
+      const tasks = (o.tasks as Task[]).flatMap((t, i) => {
+        const view = describeTask(t, 0, () => undefined);
+        if (!view.goal) return [];
+        const goal = view.goal;
+        return [
+          {
+            text: view.text,
+            race: view.race,
+            points: snaps.map((s) => ({
+              at: s.slot.toISOString(),
+              value: Math.min(
+                1,
+                Number((s.progress as number[])[i] ?? 0) / goal,
+              ),
+            })),
+          },
+        ];
+      });
+      return { id: o.id.toString(), title: o.title, tasks };
     }),
   );
 }

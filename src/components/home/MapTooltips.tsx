@@ -1,13 +1,26 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { type CSSProperties, useEffect, useState } from "react";
 import { Countdown } from "@/components/hud/Countdown";
 import type { Front } from "@/lib/data/war";
 import { defenseOutlook, enemyProgress } from "@/lib/hd/defense";
 import { tooltipEffects } from "@/lib/hd/effects";
 import { formatNumber, formatPercent, formatRate } from "@/lib/hd/format";
-import { factionColor, factionOf } from "@/lib/hd/terms";
+import { factionOf } from "@/lib/hd/terms";
 
-// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip").
-// Rendered only after a hover, focus or tap, so reading the clock here cannot break hydration.
+// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip"),
+// also used large on the planet page. Time-based figures wait for the browser clock:
+// the planet page is a cached server render that cannot know the current time.
+function useNow() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
 
 function Bar({
   ratio,
@@ -104,12 +117,13 @@ const SHIELD = "M14 3 L24 7 V14 C24 20 19 24 14 26 C9 24 4 20 4 14 V7 Z";
 
 export function DefenseTooltip({ front }: { front: Front }) {
   const defense = front.defense!;
-  const now = new Date();
+  const now = useNow();
   const start = new Date(defense.startedAt);
   const end = new Date(defense.expiresAt);
-  const enemy = enemyProgress(start, end, now);
+  const enemy = now ? enemyProgress(start, end, now) : 0;
   const enemyPerHour = 3_600_000 / (end.getTime() - start.getTime());
-  const outlook = defenseOutlook(front.progress, front.perHour, end, now);
+  const outlook =
+    now && defenseOutlook(front.progress, front.perHour, end, now);
   return (
     <>
       <div className="hd-tip__head">
@@ -176,7 +190,7 @@ export function DefenseTooltip({ front }: { front: Front }) {
           <div className="hd-row">
             <span>적의 공세 상황</span>
             <span className="hd-row__value">
-              {formatRate(enemyPerHour)} · {formatPercent(enemy)}
+              {formatRate(enemyPerHour)} · {now ? formatPercent(enemy) : "—"}
             </span>
           </div>
           <Bar ratio={enemy} fill="var(--faction)" thick />
@@ -200,6 +214,3 @@ export function DefenseTooltip({ front }: { front: Front }) {
     </>
   );
 }
-
-export const factionStyle = (id: number) =>
-  ({ "--faction": factionColor(id) }) as CSSProperties;

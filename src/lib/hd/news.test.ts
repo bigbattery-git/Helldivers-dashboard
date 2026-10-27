@@ -39,6 +39,14 @@ it("turns Steam HTML into plain paragraphs without rendering tags", () => {
   ).toBe("First line\n• One\n• Two & more\n\nx\nEnd");
 });
 
+it("turns Steam BBCode (API bodies) into plain paragraphs", () => {
+  expect(
+    steamText(
+      '[p]This hotfix[/p][p][/p][h3]🔧 [b]Fixes[/b][/h3][list][*][p]Fixed a crash[/p][/*][/list][p][url="https://x.test"]Known Issues[/url][/p][img]{STEAM_CLAN_IMAGE}/a.png[/img]',
+    ),
+  ).toBe("This hotfix\n\n🔧 Fixes\n• Fixed a crash\n\nKnown Issues");
+});
+
 it("labels feed kinds", () => {
   expect(kindLabel("patch")).toBe("패치노트");
   expect(kindLabel("x")).toBe("x");

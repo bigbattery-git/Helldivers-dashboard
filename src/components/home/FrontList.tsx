@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { PlanetName } from "@/components/hud/PlanetName";
+import Link from "next/link";
 import type { Front } from "@/lib/data/war";
 import { formatNumber, formatPercent } from "@/lib/hd/format";
 import { FRONT_SORTS, type FrontSort, sortFronts } from "@/lib/hd/fronts";
-import { factionOf } from "@/lib/hd/terms";
-import { factionStyle } from "./MapTooltips";
+import { factionOf, factionStyle } from "@/lib/hd/terms";
 
 const SHOWN = 6;
 
@@ -56,26 +55,27 @@ export function FrontList({
       )}
       <ul className="flex flex-col gap-2.5">
         {list.map((f) => (
-          <li
-            key={f.index}
-            className="hd-mission"
-            style={factionStyle(f.faction)}
-          >
-            <div className="min-w-0">
-              <div className="hd-mission__title">
-                <PlanetName name={f.name} nameEn={f.nameEn} />
+          <li key={f.index}>
+            {/* The whole row opens the planet page; its "(원문)" toggle lives there. */}
+            <Link
+              href={`/planets/${f.index}`}
+              className="hd-mission hover:bg-sunken focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent"
+              style={factionStyle(f.faction)}
+            >
+              <div className="min-w-0">
+                <div className="hd-mission__title">{f.name}</div>
+                <div className="hd-mission__planet">
+                  {f.sector && `${f.sector} 섹터 · `}
+                  {factionOf(f.faction)?.name}
+                  {targets.has(f.index) && " · 주요 명령"}
+                  {f.defense && " · 방어 중"}
+                </div>
               </div>
-              <div className="hd-mission__planet">
-                {f.sector && `${f.sector} 섹터 · `}
-                {factionOf(f.faction)?.name}
-                {targets.has(f.index) && " · 주요 명령"}
-                {f.defense && " · 방어 중"}
+              <div className="hd-mission__meta">
+                {f.defense && <span className="text-info">방어 </span>}
+                {formatPercent(f.progress)} · {formatNumber(f.players)}명
               </div>
-            </div>
-            <div className="hd-mission__meta">
-              {f.defense && <span className="text-info">방어 </span>}
-              {formatPercent(f.progress)} · {formatNumber(f.players)}명
-            </div>
+            </Link>
           </li>
         ))}
       </ul>
