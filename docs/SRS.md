@@ -153,4 +153,4 @@
 | P1 자료조사 | 완료 | 100% | 조사 3건, ADR 0001~0004, SRS v2 승인 (2026-10-26) |
 | P2 환경 구축 | 진행 중 | 76% | 남은 일: Vercel 연결·Supabase 클라우드(사용자), env pull, Preview 배포 |
 | P3 데이터 수집 | 완료 | 100% | [SRS v3](SRS-v3.md). 8슬롯 연속 수집·Sentry·CI 확인 (2026-10-27, PR #3) |
-| P4 화면 | 진행 중 | 16% | [SRS v4](SRS-v4.md) 설계. 지도·X 수집·기계 번역(ADR 0006)·커뮤니티 API 폴백 포함. 사용자 조치: Supabase 새 프로젝트, Vercel 연결 |
+| P4 화면 | 진행 중 | 26% | [SRS v4](SRS-v4.md) 설계. 지도·X 수집·기계 번역(ADR 0006)·커뮤니티 API 폴백 포함. 사용자 조치: Supabase 새 프로젝트, Vercel 연결 |
