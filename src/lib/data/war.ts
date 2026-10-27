@@ -25,6 +25,8 @@ export type Front = {
 
 export type WarOverview = {
   slot: string;
+  // war season start, for "DAY N" in the page header
+  warStartedAt: string | null;
   fronts: Front[];
   totals: { players: number; liberated: number; planets: number };
 };
@@ -44,16 +46,21 @@ export async function getWarOverview(): Promise<WarOverview | null> {
   const slot = latest.slot;
   const hourAgo = new Date(slot.getTime() - HOUR_MS);
 
-  const [planets, now, before, campaigns, events, effects] = await Promise.all([
-    db.planet.findMany({ where: { disabled: false } }),
-    db.planetSnapshot.findMany({ where: { slot } }),
-    db.planetSnapshot.findMany({ where: { slot: hourAgo } }),
-    db.campaign.findMany({ where: { lastSeenAt: slot } }),
-    db.planetEvent.findMany({
-      where: { startedAt: { lte: slot }, expiresAt: { gt: slot } },
-    }),
-    db.planetEffect.findMany({ where: { endedAt: null } }),
-  ]);
+  const [war, planets, now, before, campaigns, events, effects] =
+    await Promise.all([
+      db.war.findFirst({
+        orderBy: { id: "desc" },
+        select: { startedAt: true },
+      }),
+      db.planet.findMany({ where: { disabled: false } }),
+      db.planetSnapshot.findMany({ where: { slot } }),
+      db.planetSnapshot.findMany({ where: { slot: hourAgo } }),
+      db.campaign.findMany({ where: { lastSeenAt: slot } }),
+      db.planetEvent.findMany({
+        where: { startedAt: { lte: slot }, expiresAt: { gt: slot } },
+      }),
+      db.planetEffect.findMany({ where: { endedAt: null } }),
+    ]);
   const planetBy = new Map(planets.map((p) => [p.index, p]));
   const snapBy = new Map(now.map((s) => [s.planetIndex, s]));
   const prevBy = new Map(before.map((s) => [s.planetIndex, s]));
@@ -109,6 +116,7 @@ export async function getWarOverview(): Promise<WarOverview | null> {
 
   return {
     slot: slot.toISOString(),
+    warStartedAt: war?.startedAt.toISOString() ?? null,
     fronts,
     totals: {
       players: now.reduce((sum, s) => sum + s.players, 0),

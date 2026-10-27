@@ -7,8 +7,13 @@ export const toMapPercent = (x: number, y: number) => ({
   top: ((1 - y) / 2) * 100,
 });
 
-// Planets right of 60% put their label and tooltip on the left.
+// Planets right of 60% put their tooltip on the left.
 export const flipsLeft = (leftPercent: number) => leftPercent > 60;
+
+// Labels sit on the outer side like the reference, except near an edge where they
+// would be clipped by the map well; there they turn inward.
+export const labelOnRight = (leftPercent: number) =>
+  leftPercent > 85 ? false : leftPercent < 15 ? true : leftPercent > 60;
 
 type Labelled = { index: number; players: number; defense: unknown };
 

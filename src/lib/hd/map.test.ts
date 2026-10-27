@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flipsLeft, labelledPlanets, toMapPercent } from "./map";
+import { flipsLeft, labelledPlanets, labelOnRight, toMapPercent } from "./map";
 
 describe("toMapPercent", () => {
   it("puts Super Earth in the middle and positive y at the top", () => {
@@ -10,6 +10,13 @@ describe("toMapPercent", () => {
     expect(cyberstan.top).toBeCloseTo(15);
     expect(flipsLeft(toMapPercent(0.5, 0).left)).toBe(true);
     expect(flipsLeft(toMapPercent(0.1, 0).left)).toBe(false);
+  });
+
+  it("keeps labels inside the map near the edges", () => {
+    expect(labelOnRight(70)).toBe(true);
+    expect(labelOnRight(40)).toBe(false);
+    expect(labelOnRight(97)).toBe(false);
+    expect(labelOnRight(5)).toBe(true);
   });
 });
 

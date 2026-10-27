@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Noto_Sans_KR, Rajdhani } from "next/font/google";
 import { SiteFooter } from "@/components/hud/SiteFooter";
-import { SiteHeader } from "@/components/hud/SiteHeader";
 import "./globals.css";
 
 // Variable names match the fallbacks in src/styles/hud.css.
@@ -36,7 +35,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${rajdhani.variable} ${jetbrainsMono.variable} ${notoSansKr.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader />
         {children}
         <SiteFooter />
       </body>
