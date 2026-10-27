@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { kindLabel, newsPreview } from "./news";
+import { kindLabel, newsPreview, steamText } from "./news";
 
 describe("newsPreview", () => {
   it("uses a dispatch headline as the title", () => {
@@ -29,6 +29,14 @@ describe("newsPreview", () => {
     );
     expect(newsPreview({ title: null, body: null }).title).toBe("제목 없음");
   });
+});
+
+it("turns Steam HTML into plain paragraphs without rendering tags", () => {
+  expect(
+    steamText(
+      '<p class="bb_paragraph">First&nbsp;line</p><ul><li>One</li><li>Two &amp; more</li></ul><script>x</script><br>End',
+    ),
+  ).toBe("First line\n• One\n• Two & more\n\nx\nEnd");
 });
 
 it("labels feed kinds", () => {

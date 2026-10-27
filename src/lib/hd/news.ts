@@ -8,6 +8,29 @@ const KIND_LABELS: Record<string, string> = {
 
 export const kindLabel = (kind: string) => KIND_LABELS[kind] ?? kind;
 
+const ENTITIES: Record<string, string> = {
+  nbsp: " ",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  "#39": "'",
+};
+
+// Full body of a Steam post as plain paragraphs (news page). The HTML is never rendered:
+// block ends become line breaks, list items get a bullet, every other tag is dropped.
+export function steamText(html: string) {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|h\d|li|ul|ol)>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(nbsp|amp|lt|gt|quot|#39);/g, (_, e: string) => ENTITIES[e])
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 // Title and one-line preview for a feed row (F-03-1).
 // Dispatches have no title: their `<i=3>` headline becomes it. Steam bodies are HTML;
 // only their text is kept here, so nothing from the feed is rendered as markup.
