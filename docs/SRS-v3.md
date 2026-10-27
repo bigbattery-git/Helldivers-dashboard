@@ -131,4 +131,4 @@ X 수집, 커뮤니티 API 폴백, Training Manual 백필, `revalidateTag`(P4), 
 - [x] 같은 슬롯에 `/api/collect`를 두 번 불러도 스냅샷 행 수가 늘지 않는다
 - [x] 소스 하나를 일부러 실패시켜도 나머지가 저장되고 Sentry에 이벤트가 남는다 (2026-10-27)
 - [x] `planet`에 전 행성의 한국어 이름이 채워져 있다
-- [ ] CI(`format:check → lint → typecheck → test → build`) 통과
+- [x] CI(`format:check → lint → typecheck → test → build`) 통과 (PR #3, 2026-10-27)
