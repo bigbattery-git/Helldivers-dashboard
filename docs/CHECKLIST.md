@@ -143,7 +143,7 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] D-11 `pnpm db:cron` (2회 실행해도 작업 2개·시크릿 1개, pg_net → 로컬 dev 서버 200) (수집 15분, 30일 정리 D-06)
 
 ### P3 완료 기준
-- [ ] 로컬 pg_cron이 연속 8슬롯(2시간) 빠짐없이 수집했다 — 진행 중: 2026-10-26 16:25 KST 등록. 1차는 PC 종료로 16:45 이후 중단. 2차는 21:30·21:45 성공 후 22:00에 404로 중단(다른 프로젝트의 Caddy가 `127.0.0.1:3000`을 점유해 요청을 가로챔). dev 포트를 4100으로 옮기고 Cron 재등록, 22:08 수동 호출 200 확인. 8슬롯은 2026-10-27에 다시 확인
+- [x] 로컬 pg_cron이 연속 8슬롯(2시간) 빠짐없이 수집했다 (2026-10-27 11:30~13:15 KST, `collection_run` 8건 모두 종료, pg_net 응답 8건 모두 200·소스 오류 없음). 이전 시도: 10-26 1차는 PC 종료, 2차는 다른 프로젝트의 Caddy가 `:3000`을 가로채 404 → 포트 4100으로 이동
 - [x] 같은 슬롯 재호출에 (2026-10-26, 재호출 후 planet_snapshot 273행 유지) 스냅샷 행 수가 늘지 않는다
 - [x] 소스 하나를 일부러 실패시켜도 나머지가 저장되고 Sentry에 이벤트가 남는다 (2026-10-27 11:23, 그 슬롯에 돈 나머지 4개 소스 저장, Sentry 이벤트 1건)
 - [x] `planet`에 전 행성의 한국어 이름 (273/273)이 채워져 있다
@@ -209,13 +209,23 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [ ] 공식 한국어가 오면 기계 번역을 덮어쓴다 + 테스트
 - [ ] F-02-1 F-03-2 화면에 "자동 번역" 표시와 원문 보기
 
+### 수집 보강 (PR #3 리뷰, 2026-10-27)
+- [ ] 일일 단계: 행성 273개를 매번 upsert하지 않고, 새 행성이나 값이 바뀐 행성만 쓰기 (`existing` Map 재사용). WarInfo 좌표가 Status의 실시간 위치를 덮어쓰지 않게
+- [ ] 동시 실행 방지: `pg_try_advisory_lock` 또는 `planet_effect`에 `UNIQUE (planet_index, effect_id) WHERE ended_at IS NULL` 부분 인덱스 (열린 구간 중복)
+- [ ] 전쟁 시즌 교체 감지: Status가 실패하면 다음 실행에서 WarID를 다시 확인. `war`가 없으면 나머지 소스를 `skipped`·`error`로 기록
+- [ ] `cron-sql.mjs`: 시크릿·URL에 `$`가 있으면 거부, 원격 DB일 때 `COLLECT_URL`은 https만 허용
+- [ ] offset 검증: `Number.isFinite`, 직전 값과 크게 다르면 이전 값 유지
+- [ ] 테스트: `runCollection`(소스 격리 D-08, 예외가 나도 `finished_at`, 일일·1시간 skip 조건), `collectStatus` 트랜잭션 조립, `authorized()` 길이 불일치·빈 시크릿
+- [ ] P4 화면: Steam 본문(`body_ko`·`body_en`) HTML은 sanitize한 뒤 렌더링
+
 ### 커뮤니티 API 폴백 (D-03, F-05-2)
 - [ ] Arrowhead 원본 실패·검증 실패 시 해당 항목만 `api.helldivers2.dev`로 받기 (`X-Super-Client`·`X-Super-Contact` 헤더, 레이트리밋 5회/10초) + 테스트
 - [ ] `collection_run`에 소스별 폴백 여부 기록 (D-05)
 - [ ] F-05-2 폴백으로 받은 항목에 "영어 원문"·출처 표시, 헤더 데이터 상태에 "폴백" 표시
 
 ### 배포 (P2 잔여)
-- [ ] E-02 E-03 Vercel 프로젝트 연결, 클라우드 Supabase, `vercel env pull`
+- [ ] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard` (서울 `ap-northeast-2`). 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정)
+- [ ] E-02 E-03 Vercel 프로젝트 연결(함수 리전 Seoul `icn1`), 클라우드 마이그레이션, `vercel env pull`
 - [ ] 클라우드 pg_cron 등록 (`COLLECT_URL`은 배포 URL)
 - [ ] E-07 Preview 배포
 - [ ] Q-05 Vercel 사용량이 Hobby 한도의 50% 이하인지 확인 (함수 호출·ISR 쓰기, 하루 수집 후)

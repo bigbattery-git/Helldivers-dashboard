@@ -127,8 +127,8 @@ X 수집, 커뮤니티 API 폴백, Training Manual 백필, `revalidateTag`(P4), 
 
 ## 9. P3 완료 기준
 
-- [ ] 로컬 pg_cron이 연속 8슬롯(2시간) 빠짐없이 수집했다 (`collection_run`, `cron.job_run_details`). 24시간 연속 기준은 클라우드 배포 후로 옮긴다
+- [x] 로컬 pg_cron이 연속 8슬롯(2시간) 빠짐없이 수집했다 (2026-10-27 11:30~13:15) (`collection_run`, `cron.job_run_details`). 24시간 연속 기준은 클라우드 배포 후로 옮긴다
 - [x] 같은 슬롯에 `/api/collect`를 두 번 불러도 스냅샷 행 수가 늘지 않는다
-- [ ] 소스 하나를 일부러 실패시켜도 나머지가 저장되고 Sentry에 이벤트가 남는다
+- [x] 소스 하나를 일부러 실패시켜도 나머지가 저장되고 Sentry에 이벤트가 남는다 (2026-10-27)
 - [x] `planet`에 전 행성의 한국어 이름이 채워져 있다
 - [ ] CI(`format:check → lint → typecheck → test → build`) 통과
