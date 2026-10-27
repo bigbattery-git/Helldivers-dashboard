@@ -92,21 +92,21 @@
 - [x] E-01 pnpm 설치 (corepack은 Windows 권한 오류(EPERM)로 실패 → `npm i -g pnpm@12.15.0`, `packageManager` 필드로 고정)
 - [x] E-01 `pnpm create next-app` (Next 16.4.3, TS, App Router, ESLint, Tailwind, `src/`, cacheComponents)
 - [x] E-01 Prettier, Vitest 설정 (`.npmrc` save-exact, 스크립트 lint·typecheck·test·format)
-- [ ] E-02 DB 프로비저닝 (Vercel Marketplace) — 진행 중: 로컬 Supabase(Docker, `pnpm db:start`)로 대체 운영, 클라우드는 Vercel 연결 후
+- [x] E-02 DB 프로비저닝 (Marketplace 대신 Supabase에서 직접 생성, 시드니 `ap-southeast-2`. 2026-10-27, P4 배포 절 참고)
 - [x] E-02 ORM 설정 + 첫 마이그레이션 성공 (Prisma 7.10.1, 로컬 Supabase에 `collection_run` 생성. pg_cron·pg_net 로컬 동작 확인, Free 클라우드는 미확인)
-- [ ] E-03 Vercel 프로젝트 연결 + `vercel env pull`
+- [x] E-03 Vercel 프로젝트 연결 (2026-10-27. `vercel env pull`은 `.env.cloud`로 대체, P4 배포 절 참고)
 - [x] E-03 `.env.example` 작성 (DATABASE_URL, DIRECT_URL, CRON_SECRET, X_BEARER_TOKEN)
 - [x] E-04 `/api/health` 라우트 (로컬 DB 정상 200, DB 중단 시 503 확인)
 - [x] E-04 외부 API 1건 호출 스모크 테스트 (`pnpm test:smoke`, Arrowhead WarID)
 - [x] E-05 GitHub Actions CI (format:check → lint → typecheck → test → build). GitHub Actions 통과 (PR #1)
 - [x] E-06 훅 실동작 확인 (편집 시 포맷·린트, 턴 종료 시 빌드: 통과·타입 오류 차단 모두 확인)
 - [x] E-06 CLAUDE.md에 명령어·아키텍처 갱신
-- [ ] E-07 첫 Preview 배포
+- [x] E-07 첫 Preview 배포 (2026-10-27, `chore/p4-deploy`. P4 배포 절 참고)
 
 ### P2 완료 기준
 - [x] 로컬 `pnpm build` 통과
 - [x] CI 녹색 (PR #1, run 40280731440, 2026-10-26)
-- [ ] Preview 배포 URL 확보
+- [x] Preview 배포 URL 확보 (2026-10-27, 브랜치 Preview. Vercel 로그인 보호가 기본으로 걸려 있음)
 - [x] 훅이 실제로 포맷·린트·빌드를 수행한다
 
 P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)은 사용자 작업으로 P3와 병행한다. 완료 기준 미충족 상태로 P3에 들어가는 예외는 사용자 결정이다 (2026-10-26).
@@ -235,10 +235,10 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] F-05-2 폴백으로 받은 항목에 "영어 원문"·출처 표시, 헤더 데이터 상태에 "폴백" 표시 (PR D1: 홈·하위 화면 LAST UPDATE 타일에 "폴백" 배지(설명: 커뮤니티 API(영어)), 한글 없는 MO 제목에 "원문". 폴백 MO는 제목·브리핑을 덮어쓰지 않고, 폴백 디스패치는 새 항목만. 화면은 로컬에서 확인, 360px 가로 스크롤 없음)
 
 ### 배포 (P2 잔여)
-- [ ] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard` (서울 `ap-northeast-2`). 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정)
-- [ ] E-02 E-03 Vercel 프로젝트 연결(함수 리전 Seoul `icn1`), 클라우드 마이그레이션, `vercel env pull`
-- [ ] 클라우드 pg_cron 등록 (`COLLECT_URL`은 배포 URL)
-- [ ] E-07 Preview 배포
+- [x] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard`. 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정. 생성 화면은 Americas·Europe·Asia-Pacific 일반 리전만 고를 수 있어 시드니 `ap-southeast-2`로 생성됨. 서울로 다시 만들지 않고 시드니 유지, 사용자 결정)
+- [x] E-02 E-03 Vercel 프로젝트 연결(함수 리전은 DB와 같은 Sydney `syd1`, `vercel.json`으로 고정. ADR 0003 "리전 맞춤"), 클라우드 마이그레이션 4개 적용(`prisma migrate deploy`), 배포 `/api/health` 200·`db: ok`. `vercel env pull`은 하지 않음: `.env.local`을 덮어써 로컬 dev가 클라우드 DB를 보게 되므로, 클라우드 대상 명령은 `.env.cloud`(`DIRECT_URL`·`COLLECT_URL`, gitignore)를 `node --env-file=.env.cloud`로 먼저 읽는다
+- [x] 클라우드 pg_cron 등록 (`COLLECT_URL`은 배포 URL) (2026-10-27: `collect`·`retention` 등록. 수동 수집 1회 전 소스 ok(번역 6건, X 5건), 13:00 UTC 슬롯을 cron이 호출해 200·7초, `collection_run` 기록 확인)
+- [x] E-07 Preview 배포 (2026-10-27: `chore/p4-deploy` Preview READY, 함수 `syd1`, `/api/health` 200·`db: ok`. 첫 빌드는 Vercel 빌드 캐시로 설치가 건너뛰어져 `postinstall`의 `prisma generate`가 안 돌아 실패 → `build`에 `prisma generate`를 붙여 해결. 주의: 배포 직후 화면은 빌드 때 만든 빈 껍데기라 첫 요청은 "—"를 보이고, Production은 다음 수집의 `revalidateTag`, Preview는 15분 `revalidate` 뒤 첫 요청에서 채워진다)
 - [ ] Q-05 Vercel 사용량이 Hobby 한도의 50% 이하인지 확인 (함수 호출·ISR 쓰기, 하루 수집 후)
 
 ### S 우선순위 (일정이 남으면)
@@ -251,7 +251,7 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [ ] 홈 화면이 모바일 LCP 2.5초 이하다
 - [ ] 소스 하나를 일부러 실패시켰을 때 폴백·지연 배지가 동작한다
 - [ ] 클라우드 15분 수집이 24시간 연속(실패 슬롯 ≤ 2) 돌았다
-- [ ] Production 배포 URL을 확보했다
+- [x] Production 배포 URL을 확보했다 (`helldivers-dashboard.vercel.app`, 2026-10-27. 수집 후 홈에 실데이터 확인)
 - [ ] CI 녹색
 
 ## 백로그

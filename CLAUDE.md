@@ -24,7 +24,7 @@
 | 명령 | 내용 |
 | --- | --- |
 | `pnpm dev` | 개발 서버 (`http://localhost:4100`. 3000~3104는 다른 로컬 프로젝트가 써서 피한다) |
-| `pnpm build` | 프로덕션 빌드. 빌드 중에는 DB에 접속하지 않는다 |
+| `pnpm build` | 프로덕션 빌드(`prisma generate` 후 `next build`. Vercel이 빌드 캐시로 설치를 건너뛰면 `postinstall`이 돌지 않아서). 빌드 중에는 DB에 접속하지 않는다 |
 | `pnpm lint` / `pnpm format` / `pnpm format:check` | ESLint / Prettier (`*.md`, `.claude/`는 포맷 제외) |
 | `pnpm typecheck` | `next typegen` 후 `tsc --noEmit` |
 | `pnpm test` | 단위 테스트 (Vitest `unit` 프로젝트, `src/**/*.test.ts`) |
@@ -35,6 +35,7 @@
 | `pnpm db:cron` | pg_cron에 15분 수집·30일 정리 작업 등록 (`CRON_SECRET` 필요, `COLLECT_URL` 기본은 로컬 dev 서버) |
 
 - 로컬에서는 `DATABASE_URL`·`DIRECT_URL`이 없으면 로컬 Supabase 기본 주소를 쓴다. 프로덕션은 `DATABASE_URL`이 없으면 오류를 낸다. 키 이름은 `.env.example`.
+- 클라우드 DB(Supabase 시드니, Vercel 함수 `syd1`)에 대한 명령은 `.env.cloud`(`DIRECT_URL`=Session pooler 5432, `COLLECT_URL`=배포 주소)를 먼저 읽어 실행한다: `node --env-file=.env.cloud node_modules/prisma/build/index.js migrate deploy`, cron 등록은 `node --env-file=.env.cloud scripts/cron-sql.mjs | node --env-file=.env.cloud node_modules/prisma/build/index.js db execute --stdin`. `vercel env pull`은 `.env.local`을 덮어쓰므로 쓰지 않는다.
 - Prisma 클라이언트는 `src/generated/prisma`에 생성되며(`postinstall`), 커밋하지 않는다.
 - CI(`.github/workflows/ci.yml`): `format:check → lint → typecheck → test → build`.
 
