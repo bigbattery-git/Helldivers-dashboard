@@ -1,0 +1,37 @@
+{
+  "galaxy_stats": {
+    "missionsWon": 1082239820,
+    "missionsLost": 104880059,
+    "missionTime": 3569722355167,
+    "bugKills": 232909274027,
+    "automatonKills": 121920132468,
+    "illuminateKills": 79299798005,
+    "bulletsFired": 2081561900097,
+    "bulletsHit": 2286814739927,
+    "timePlayed": 3569722355167,
+    "deaths": 9228738193,
+    "revives": 2,
+    "friendlies": 1074733593,
+    "missionSuccessRate": 91,
+    "accurracy": 100
+  },
+  "planets_stats": [
+    {
+      "planetIndex": -1337,
+      "missionsWon": 0,
+      "missionsLost": 0,
+      "missionTime": 1337,
+      "bugKills": 0,
+      "automatonKills": 1337,
+      "illuminateKills": 1337,
+      "bulletsFired": 1337,
+      "bulletsHit": 0,
+      "timePlayed": 1337,
+      "deaths": 0,
+      "revives": 0,
+      "friendlies": 0,
+      "missionSuccessRate": 0,
+      "accurracy": 0
+    }
+  ]
+}

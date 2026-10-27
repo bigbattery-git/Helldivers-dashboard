@@ -1,0 +1,119 @@
+{
+  "warId": 801,
+  "time": 85058100,
+  "impactMultiplier": 0.024828916,
+  "storyBeatId32": 0,
+  "planetStatus": [
+    {
+      "index": 0,
+      "owner": 1,
+      "health": 1000000,
+      "regenPerSecond": 4.1666665,
+      "players": 528,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "index": 1,
+      "owner": 1,
+      "health": 1000000,
+      "regenPerSecond": 4.1666665,
+      "players": 0,
+      "position": {
+        "x": 0.05373042,
+        "y": 0.10565466
+      }
+    },
+    {
+      "index": 2,
+      "owner": 1,
+      "health": 1000000,
+      "regenPerSecond": 4.1666665,
+      "players": 0,
+      "position": {
+        "x": 0.04664221,
+        "y": 0.16758725
+      }
+    }
+  ],
+  "planetAttacks": [
+    {
+      "source": 212,
+      "target": 259
+    }
+  ],
+  "campaigns": [
+    {
+      "id": 51413,
+      "planetIndex": 7,
+      "type": 0,
+      "count": 10,
+      "race": 1
+    },
+    {
+      "id": 51428,
+      "planetIndex": 259,
+      "type": 0,
+      "count": 5,
+      "race": 1
+    }
+  ],
+  "communityTargets": [],
+  "jointOperations": [],
+  "planetEvents": [
+    {
+      "id": 5001,
+      "planetIndex": 1,
+      "eventType": 1,
+      "race": 2,
+      "health": 400000,
+      "maxHealth": 600000,
+      "startTime": 85054500,
+      "expireTime": 85140900,
+      "campaignId": 51413,
+      "jointOperationIds": []
+    }
+  ],
+  "planetActiveEffects": [
+    {
+      "index": 256,
+      "galacticEffectId": 1190
+    },
+    {
+      "index": 259,
+      "galacticEffectId": 1188
+    },
+    {
+      "index": 167,
+      "galacticEffectId": 1188
+    }
+  ],
+  "planetRegions": [
+    {
+      "planetIndex": 114,
+      "regionIndex": 0,
+      "owner": 3,
+      "health": 400000,
+      "regerPerSecond": 1.1111112,
+      "availabilityFactor": 0.57685,
+      "isAvailable": false,
+      "players": 0
+    }
+  ],
+  "activeElectionPolicyEffects": [],
+  "globalEvents": [],
+  "superEarthWarResults": [],
+  "spaceStations": [
+    {
+      "id32": 749875195,
+      "planetIndex": 158,
+      "activeEffectIds": [1210, 1213, 1215, 1238, 1261, 1262, 1384, 1385],
+      "currentElectionEndWarTime": 85063190,
+      "flags": 1
+    }
+  ],
+  "globalResources": [],
+  "layoutVersion": 716
+}

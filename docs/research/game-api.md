@@ -321,4 +321,78 @@ Arrowhead 원본을 20초마다 동기화해 정규화한 C# 서비스. MIT 라�
 - Vercel 함수·외부 스케줄러(R-03)의 송신 IP에서 B가 429를 내는지 P2 스모크 테스트에서 확인.
 - 디펜스 이벤트(`planetEvents`)가 있을 때의 실제 응답 형태 (조사 시점 0건).
 - `Status`의 `globalEvents[].message`가 `Accept-Language: ko-KR`로 한국어가 오는지 (이번에는 en-US로만 호출).
-- MO 태스크 `values`/`valueTypes`와 보상 `type` 해석 표(C) 검증.
+- ~~MO 태스크 `values`/`valueTypes`와 보상 `type` 해석 표(C) 검증.~~ → 아래 "해석 표 검증 (2026-10-27)"
+
+## 추가 확인 (2026-10-26, P3 계획 중 1회 호출)
+
+- `WarSeason/{id}/Status`가 `Accept-Language` 헤더 없이 호출하면 `{"errorCode":13018011,"message":"Accept-Language HTTP header missing"}`를 준다(HTTP 상태도 오류). 모든 Arrowhead 호출에 헤더를 넣는다.
+- `Status` 최상위 키: `warId, time, impactMultiplier, storyBeatId32, planetStatus, planetAttacks, campaigns, communityTargets, jointOperations, planetEvents, planetActiveEffects, planetRegions, activeElectionPolicyEffects, globalEvents, superEarthWarResults, spaceStations, globalResources, layoutVersion`.
+  - `planetStatus[]`에 `position {x, y}`가 있다(행성이 움직일 수 있음).
+  - `planetActiveEffects[]` = `{index, galacticEffectId}` (154건). 행성 환경 변화 추적에 쓴다.
+  - `planetRegions[]` = 행성 내부 지역별 소유·HP·플레이어 (34건, P3에서는 저장 안 함).
+- `WarInfo.planetInfos[]` = `{index, settingsHash, planetNameId32, planetBiomeId32, position, waypoints, sector, maxHealth, disabled, initialOwner}`. 최상위에 `planetPermanentEffects`, `planetRegions`, `homeWorlds`, `capitalInfos`도 있다.
+
+## 해석 표 검증 (2026-10-27, P4 기반 조사)
+
+C(`helldivers-2/json`, MIT, 마지막 커밋 2026-08-16)의 표를 로컬 DB에 쌓인 실제 값과 대조했다. 외부 호출은 GitHub API 몇 번뿐이다.
+
+### MO 태스크 (`assignments/tasks/task/*.json`)
+
+| 표 | 내용 |
+| --- | --- |
+| `type.json` | 2 Extract, 3 Eradicate, 7 CompleteMissions, 9 CompleteOperations, 11 Liberation, 12 Defense, 13 Control, 15 Expand |
+| `valueTypes.json` | 1 race, 2 unknown, 3 goal, 4 unit_id, 5 item_id, 9 difficulty, 11 location_type, 12 location_index |
+| `values.json` | `location_type` 2 = 행성 index (이것뿐) |
+| `factions.json` | 1 Humans, 2 Terminids, 3 Automaton, 4 Illuminate |
+| `reward/type.json` | 1 Medals (이것뿐) |
+
+`values[i]`는 같은 위치의 `valueTypes[i]`로 읽는다. 현재 MO(id 568917260, "민주적 저격수", 만료 2026-10-29 10:54 UTC)에 적용한 결과:
+
+| 태스크 | type | race | goal | unit_id | item_id | vt 6 | vt 8 | 진행(10-27 11:45 KST) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 3 Eradicate | 2 테르미니드 | 300,000,000 | 0 | 3827587060 | 1 | 0 | 48,655,105 (16%) |
+| 2 | 3 Eradicate | 4 일루미닛 | 65,000,000 | 0 | 376960160 | 1 | 0 | 14,425,454 (22%) |
+| 3 | 3 Eradicate | 3 오토마톤 | 50,000,000 | 0 | 2197477188 | 1 | 0 | 50,000,000 (완료) |
+
+- 진행률은 `progress[i] ÷ goal`이다. 저장은 `assignment_snapshot.progress`(태스크 순서 배열).
+- **`valueTypes` 6과 8은 C 표에 없다.** 6은 이번 MO에서 세 태스크 모두 1이다. 뜻을 모르므로 표시에 쓰지 않는다.
+- **`item_id` 해시 3개가 C의 `items/item_names.json`(411개)에 없다.** 브리핑으로 보면 저격 무기 계열로 보이지만, 해시만으로는 무기 이름을 알 수 없다. 표에 없는 `item_id`는 "지정 무기"처럼 일반 문구로 보여 주고 브리핑을 함께 둔다.
+- 보상은 `{id32, type, amount}`이고 `type` 1(메달)만 표에 있다. 이번 MO는 메달 45개다.
+- 태스크 문구는 type별 한국어 틀로 만든다. 예: Eradicate → "{세력} {goal}마리 처치"(`unit_id`·`item_id`가 있으면 조건 추가), Liberation → "{행성} 해방", Defense → "{행성} 방어". 모르는 type은 "알 수 없는 목표 (type N)"(SRS v2 F-02-2).
+- 이번에 실제로 본 type은 3뿐이다. 다른 type(11·12·13 등)의 `values` 배치는 새 MO가 오면 다시 확인하고, 테스트 고정값으로 남긴다.
+
+### 행성 효과 (`effects/planetEffects.json`)
+
+- 156개 항목, `{galacticEffectId, name, description}`. 이름은 영어 대문자(`ARSENAL AUGMENTATION: EAGLE 500KG BOMB` 등)이고, 행성 환경이 아닌 전역 효과(무기 지원 등)도 섞여 있다.
+- 로컬 DB에서 지금 켜져 있는 효과 67종 중 **52종(78%)만 표에 있다.** 없는 것: 1272, 1315~1320, 1327, 1333, 1363, 1365, 1366, 1418, 1426, 1427.
+- 따라서 한국어 표는 직접 만들어야 하고, 모르는 id는 툴팁에 표시하지 않는다(CHECKLIST P4 "행성 요소" 항목). 표에 있는 영어 설명은 번역 초안의 입력으로만 쓴다.
+
+### 기타
+
+- `campaign_types.json`: 0 Liberation / Defense, 1 Recon, 2 Story. 우리 DB의 `campaign.type`은 지금 37건 모두 0이라, 1·2는 아직 실제로 보지 못했다.
+
+출처
+- https://github.com/helldivers-2/json (`assignments/`, `factions.json`, `effects/planetEffects.json`, `items/item_names.json`, `campaign_types.json`)
+
+## 공식 한국어 용어 빈도 (2026-10-27, P4 용어표 근거)
+
+`NewsFeed/801?maxEntries=1024&fromTimestamp=0`을 `Accept-Language: ko-KR`로 1회 호출했다. 1,024건이 왔고, 그중 한글이 든 공식 번역은 972건(95%)이다. 나머지 52건은 영어로 남아 있다(D-12 기계 번역 대상). 같은 개념의 표기별 등장 횟수:
+
+| 개념 | 공식 표기 (횟수) | 쓰지 않는 표기 | 용어표 |
+| --- | --- | --- | --- |
+| Terminids | 테르미니드 (260) | Terminid (4), 터미니드 (0) | 테르미니드 |
+| Automatons | 오토마톤 (278) | Automaton(s) (5) | 오토마톤 |
+| Illuminate | **일루미닛** (200) | 일루미네이트 (0), Illuminate (2) | 일루미닛 |
+| Super Earth | **슈퍼지구** (112) | 슈퍼 지구 (1), 슈퍼 어스 (0) | 슈퍼지구 |
+| Helldivers | 헬다이버 (570) | Helldiver (16) | 헬다이버 |
+| Major Order | 주요 명령 (298) | 주요 임무 (2) | 주요 명령 |
+| Ministry of Truth | 진리부 (5) | 진실부 (0) | 진리부 |
+| Stratagem | 스트라타젬 (144) | — | 스트라타젬 |
+| Defense / Liberation | 방어 (152), 해방 (187), 디펜스 (12) | 수비 (2) | 방어, 해방 |
+| Gloom | 글룸 (111) | — | 글룸 |
+| Invasion | 침공 (46) | — | 침공 |
+
+- 머리말(`<i=3>`) 상위: 새로운 주요 명령 114, 주요 명령 승리 82, 무기고 증강 48, 주요 명령 실패 27, 전략 업데이트 21, 새로운 전략 기회 20, 전략 기회 확보 16, 전략 경고 14. 영어 머리말 그대로인 것도 있다(`SPORE BURST SCAVENGER RAMPAGE` 5).
+- "High Command"에 대응하는 고정 표기는 찾지 못했다(최고 사령부·지휘부 모두 0). 기계 번역에 맡긴다.
+- 섹터 이름은 DB에 영어(`Sol`, `Altus`)로만 있다. 공식 디스패치는 섹터를 거의 언급하지 않는다. 화면에서는 `Sol 섹터`처럼 영어 이름 + "섹터"로 쓴다.
+- 디자인 시스템이 쓰던 "일루미네이트"·"슈퍼 어스"는 공식 번역에 나오지 않는다. 사용자 결정(공식 번역 표기)에 따라 화면도 **일루미닛·슈퍼지구**로 쓴다.

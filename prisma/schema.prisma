@@ -17,3 +17,145 @@ model CollectionRun {
   @@index([startedAt])
   @@map("collection_run")
 }
+
+// No foreign keys on purpose: time series must not fail when a new planet shows up before its metadata (SRS v3 §4).
+
+model War {
+  id            Int      @id
+  startedAt     DateTime @map("started_at") @db.Timestamptz
+  endedAt       DateTime @map("ended_at") @db.Timestamptz
+  // real unix seconds = timeOffsetSec + war time seconds
+  timeOffsetSec Int?     @map("time_offset_sec")
+  // last daily WarInfo + static planet refresh; offset updates do not touch it
+  infoUpdatedAt DateTime @map("info_updated_at") @db.Timestamptz
+
+  @@map("war")
+}
+
+// Static (names, sector) plus slowly changing state (WarInfo, position) (SRS v3 D-09).
+model Planet {
+  index        Int      @id
+  nameEn       String   @map("name_en")
+  nameKo       String?  @map("name_ko")
+  sector       String?
+  maxHealth    Int      @map("max_health")
+  disabled     Boolean
+  initialOwner Int      @map("initial_owner") @db.SmallInt
+  positionX    Float    @map("position_x")
+  positionY    Float    @map("position_y")
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("planet")
+}
+
+// Galactic effect on a planet as an interval; endedAt null = still active.
+model PlanetEffect {
+  id          BigInt    @id @default(autoincrement())
+  planetIndex Int       @map("planet_index")
+  effectId    Int       @map("effect_id")
+  startedAt   DateTime  @map("started_at") @db.Timestamptz
+  endedAt     DateTime? @map("ended_at") @db.Timestamptz
+  lastSeenAt  DateTime  @map("last_seen_at") @db.Timestamptz
+
+  @@unique([planetIndex, effectId, startedAt])
+  @@index([endedAt])
+  @@map("planet_effect")
+}
+
+model PlanetSnapshot {
+  planetIndex    Int      @map("planet_index")
+  slot           DateTime @db.Timestamptz
+  owner          Int      @db.SmallInt
+  health         Int
+  regenPerSecond Float    @map("regen_per_second")
+  players        Int
+  eventHealth    Int?     @map("event_health")
+
+  @@id([planetIndex, slot])
+  @@index([slot])
+  @@map("planet_snapshot")
+}
+
+// Defense events (Status.planetEvents).
+model PlanetEvent {
+  id          Int      @id
+  planetIndex Int      @map("planet_index")
+  eventType   Int      @map("event_type")
+  race        Int      @db.SmallInt
+  startedAt   DateTime @map("started_at") @db.Timestamptz
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz
+  maxHealth   Int      @map("max_health")
+  campaignId  Int      @map("campaign_id")
+
+  @@map("planet_event")
+}
+
+model Campaign {
+  id          Int      @id
+  planetIndex Int      @map("planet_index")
+  type        Int
+  race        Int      @db.SmallInt
+  count       Int
+  firstSeenAt DateTime @map("first_seen_at") @db.Timestamptz
+  lastSeenAt  DateTime @map("last_seen_at") @db.Timestamptz
+
+  @@index([lastSeenAt])
+  @@map("campaign")
+}
+
+// Major orders. Text comes from one ko-KR request and may still be English (SRS v3 D-12).
+model Assignment {
+  id         BigInt   @id
+  title      String
+  briefing   String
+  tasks      Json
+  rewards    Json
+  startedAt  DateTime @map("started_at") @db.Timestamptz
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  lastSeenAt DateTime @map("last_seen_at") @db.Timestamptz
+
+  @@map("assignment")
+}
+
+model AssignmentSnapshot {
+  assignmentId BigInt   @map("assignment_id")
+  slot         DateTime @db.Timestamptz
+  // per-task values; can exceed int4
+  progress     Json
+
+  @@id([assignmentId, slot])
+  @@map("assignment_snapshot")
+}
+
+// Dispatches and Steam announcements in one feed.
+model NewsItem {
+  id          BigInt   @id @default(autoincrement())
+  source      String // "dispatch" | "steam"
+  externalId  String   @map("external_id")
+  kind        String // "dispatch" | "patch" | "announcement"
+  titleEn     String?  @map("title_en")
+  bodyEn      String?  @map("body_en")
+  titleKo     String?  @map("title_ko")
+  bodyKo      String?  @map("body_ko")
+  url         String?
+  publishedAt DateTime @map("published_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([source, externalId])
+  @@index([publishedAt])
+  @@map("news_item")
+}
+
+model GlobalSnapshot {
+  slot         DateTime @id @db.Timestamptz
+  steamPlayers Int      @map("steam_players")
+
+  @@map("global_snapshot")
+}
+
+model WarStatsSnapshot {
+  slot        DateTime @id @db.Timestamptz
+  galaxyStats Json     @map("galaxy_stats")
+
+  @@map("war_stats_snapshot")
+}

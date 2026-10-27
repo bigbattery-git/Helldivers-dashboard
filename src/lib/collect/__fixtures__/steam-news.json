@@ -1,0 +1,48 @@
+{
+  "appnews": {
+    "appid": 553850,
+    "newsitems": [
+      {
+        "gid": "1847286114032347",
+        "title": "Devoid of Liberty: 7.2.1",
+        "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1847286114032347",
+        "is_external_url": true,
+        "author": "PS_7",
+        "contents": "[p]This hotfix aims to resolve one of the main crashes we have seen. [/p][p][/p][h3]🔧 [b]Fixes[/b][/h3][p][b]Crash Fixes[/b][/p][list][*][p]Fixed a crash that would occur when another player joined o",
+        "feedlabel": "Community Announcements",
+        "date": 1792670404,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 553850,
+        "tags": ["patchnotes"]
+      },
+      {
+        "gid": "1846651706694344",
+        "title": "Devoid of Liberty: 7.2.0",
+        "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1846651706694344",
+        "is_external_url": true,
+        "author": "PS_7",
+        "contents": "[p][i][b]*** INCOMING TRANSMISSION FROM SUPER EARTH HIGH COMMAND ***[/b][/i]\n\nSuper Earth is excited to share more with you all in regards to our latest changes for Helldivers on the frontline, with t",
+        "feedlabel": "Community Announcements",
+        "date": 1792486911,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 553850
+      },
+      {
+        "gid": "1846651706693839",
+        "title": "Changing anti-cheat in HELLDIVERS 2",
+        "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1846651706693839",
+        "is_external_url": true,
+        "author": "The Baskinator",
+        "contents": "[p]Greetings Helldivers,[/p][p][/p][p]Today, we want to talk about an upcoming change to our anti-cheat, answer some questions we have seen arise in the community around modding, and discuss how it ma",
+        "feedlabel": "Community Announcements",
+        "date": 1792476019,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 553850
+      }
+    ],
+    "count": 167
+  }
+}

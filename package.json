@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4100",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,14 +15,17 @@
     "db:start": "supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgrest,edge-runtime,logflare,vector,supavisor",
     "db:stop": "supabase stop",
     "db:migrate": "prisma migrate dev",
+    "db:cron": "node scripts/cron-sql.mjs | prisma db execute --stdin",
     "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
+    "@sentry/nextjs": "^11.9.0",
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",

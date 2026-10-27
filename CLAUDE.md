@@ -13,7 +13,7 @@
 
 ## 현재 단계
 
-작업은 **P0 하네스 구축 → P1 자료조사 → P2 환경 구축** 순서로 진행한다. 이전 단계의 완료 기준을 만족해야 다음 단계로 넘어간다.
+작업은 **P0 하네스 구축 → P1 자료조사 → P2 환경 구축 → P3 데이터 수집 → P4 화면** 순서로 진행한다. 이전 단계의 완료 기준을 만족해야 다음 단계로 넘어간다.
 
 - 진행 상황과 현재 단계: [docs/CHECKLIST.md](docs/CHECKLIST.md) (`현재 단계:` 줄이 기준)
 - 요구사항: [docs/SRS.md](docs/SRS.md) — 체크리스트 항목의 ID(H-xx, R-xx, E-xx)는 SRS 요구사항 ID다
@@ -23,7 +23,7 @@
 
 | 명령 | 내용 |
 | --- | --- |
-| `pnpm dev` | 개발 서버 (`http://localhost:3000`) |
+| `pnpm dev` | 개발 서버 (`http://localhost:4100`. 3000~3104는 다른 로컬 프로젝트가 써서 피한다) |
 | `pnpm build` | 프로덕션 빌드. 빌드 중에는 DB에 접속하지 않는다 |
 | `pnpm lint` / `pnpm format` / `pnpm format:check` | ESLint / Prettier (`*.md`, `.claude/`는 포맷 제외) |
 | `pnpm typecheck` | `next typegen` 후 `tsc --noEmit` |
@@ -31,7 +31,8 @@
 | `pnpm test src/lib/db-url.test.ts -t "이름"` | 단일 파일·단일 테스트 실행 (`--`를 붙이면 `-t`가 무시된다) |
 | `pnpm test:smoke` | 실제 외부 API를 부르는 스모크 테스트 (`*.smoke.test.ts`). CI에서는 돌리지 않는다 |
 | `pnpm db:start` / `pnpm db:stop` | 로컬 Supabase(Docker, DB `127.0.0.1:54322`, Studio `:54323`) |
-| `pnpm db:migrate` | `prisma migrate dev` (스키마 변경 → 마이그레이션 생성·적용) |
+| `pnpm db:migrate` | `prisma migrate dev` (스키마 변경 → 마이그레이션 생성·적용). 생성 후 `prisma generate`로 클라이언트 갱신 |
+| `pnpm db:cron` | pg_cron에 15분 수집·30일 정리 작업 등록 (`CRON_SECRET` 필요, `COLLECT_URL` 기본은 로컬 dev 서버) |
 
 - 로컬에서는 `DATABASE_URL`·`DIRECT_URL`이 없으면 로컬 Supabase 기본 주소를 쓴다. 프로덕션은 `DATABASE_URL`이 없으면 오류를 낸다. 키 이름은 `.env.example`.
 - Prisma 클라이언트는 `src/generated/prisma`에 생성되며(`postinstall`), 커밋하지 않는다.
@@ -43,10 +44,10 @@
 
 ```
 Arrowhead API, 커뮤니티 API(폴백), Steam, X
-        │  15분마다 (Supabase Cron → POST /api/collect, P3)
+        │  15분마다 (Supabase Cron → POST /api/collect)
         ▼
 Supabase Postgres  ← Prisma (src/lib/db.ts)
-        │  'use cache' + cacheTag, 수집 후 revalidateTag (P3)
+        │  'use cache' + cacheTag, 수집 후 revalidateTag (P4)
         ▼
 Next.js 화면 (src/app)
 ```
@@ -56,6 +57,10 @@ Next.js 화면 (src/app)
 | `prisma/schema.prisma`, `prisma/migrations/` | DB 스키마와 마이그레이션. 연결 설정은 `prisma.config.ts` |
 | `src/lib/db.ts` | `getDb()` — Prisma 클라이언트(`@prisma/adapter-pg`)를 처음 호출할 때 만든다 |
 | `src/lib/db-url.ts` | DB URL 선택(환경변수 → 로컬 기본값, 프로덕션은 필수) |
+| `src/lib/collect/` | 수집: `run.ts`(소스별 격리 실행·`collection_run` 기록), `arrowhead.ts`·`steam.ts`(zod 검증·저장), `util.ts`(슬롯·전쟁 시간·fetch). 명세는 [SRS v3](docs/SRS-v3.md) |
+| `src/app/api/collect/route.ts` | `POST /api/collect` — Bearer `CRON_SECRET` 검증 후 수집 1회 |
+| `src/instrumentation.ts` | `SENTRY_DSN`이 있을 때만 서버 측 Sentry 초기화 (ADR 0005) |
+| `scripts/cron-sql.mjs` | `pnpm db:cron`이 실행하는 Cron 등록 SQL 생성 |
 | `src/app/api/health/route.ts` | `GET /api/health` — DB 응답과 마지막 수집 시각. `connection()`으로 요청 시점에만 실행 |
 | `supabase/config.toml` | 로컬 Supabase 설정 |
 
@@ -94,6 +99,8 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | --- | --- |
 | `docs/SRS.md` | 요구사항 명세. §9 상태표는 `srs-sync`가 갱신 |
 | `docs/SRS-v2.md` | 대시보드 기능 명세 (F-xx 기능, D-xx 수집, Q-xx 비기능) |
+| `docs/SRS-v3.md` | P3 데이터 수집 상세 명세 (D-01~D-12, 스키마, 실행 순서) |
+| `docs/SRS-v4.md` | P4 화면 구현 설계 (모듈 구조, 캐시 태그, 지도, PR 순서) |
 | `docs/CHECKLIST.md` | 단계별 체크리스트. `- [ ]` / `- [x]` |
 | `docs/research/*.md` | P1 조사 결과. 소스마다 SRS §5의 표준 표를 채운다 |
 | `docs/adr/NNNN-<slug>.md` | 결정 기록. `0000-template.md` 형식을 따른다 |
