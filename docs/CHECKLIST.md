@@ -239,6 +239,7 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] E-02 E-03 Vercel 프로젝트 연결(함수 리전은 DB와 같은 Sydney `syd1`, `vercel.json`으로 고정. ADR 0003 "리전 맞춤"), 클라우드 마이그레이션 4개 적용(`prisma migrate deploy`), 배포 `/api/health` 200·`db: ok`. `vercel env pull`은 하지 않음: `.env.local`을 덮어써 로컬 dev가 클라우드 DB를 보게 되므로, 클라우드 대상 명령은 `.env.cloud`(`DIRECT_URL`·`COLLECT_URL`, gitignore)를 `node --env-file=.env.cloud`로 먼저 읽는다
 - [x] 클라우드 pg_cron 등록 (`COLLECT_URL`은 배포 URL) (2026-10-27: `collect`·`retention` 등록. 수동 수집 1회 전 소스 ok(번역 6건, X 5건), 13:00 UTC 슬롯을 cron이 호출해 200·7초, `collection_run` 기록 확인)
 - [x] E-07 Preview 배포 (2026-10-27: `chore/p4-deploy` Preview READY, 함수 `syd1`, `/api/health` 200·`db: ok`. 첫 빌드는 Vercel 빌드 캐시로 설치가 건너뛰어져 `postinstall`의 `prisma generate`가 안 돌아 실패 → `build`에 `prisma generate`를 붙여 해결. 주의: 배포 직후 화면은 빌드 때 만든 빈 껍데기라 첫 요청은 "—"를 보이고, Production은 다음 수집의 `revalidateTag`, Preview는 15분 `revalidate` 뒤 첫 요청에서 채워진다)
+- [x] Supabase 보안 경고(RLS Disabled in Public, CRITICAL) 해결: 마이그레이션 `enable_rls`로 `public` 테이블 13개 전부 RLS 켬, 정책 없음 → Data API(공개 키)로 읽기·쓰기 불가. 앱·pg_cron은 테이블 소유자 `postgres`로 접속해 영향 없음(클라우드 적용 후 수집 전 소스 ok·health 200, 2026-10-27). 새 테이블 마이그레이션에도 RLS 줄을 넣는다
 - [ ] Q-05 Vercel 사용량이 Hobby 한도의 50% 이하인지 확인 (함수 호출·ISR 쓰기, 하루 수집 후)
 
 ### S 우선순위 (일정이 남으면)
