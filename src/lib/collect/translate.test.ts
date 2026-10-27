@@ -99,7 +99,7 @@ describe("translatePending", () => {
     const tx = vi.fn(async (ops: unknown[]) => ops);
     const model = (name: keyof typeof rows | "planet") => ({
       findMany: async () => (name === "planet" ? planets : (rows[name] ?? [])),
-      updateMany: (args: unknown) => ({ op: name, args }),
+      updateMany: vi.fn((args: unknown) => ({ op: name, args })),
     });
     const db = {
       $transaction: tx,
@@ -107,7 +107,7 @@ describe("translatePending", () => {
       newsItem: model("newsItem"),
       planet: model("planet"),
     };
-    return { db: db as unknown as PrismaClient, tx };
+    return { db: db as unknown as PrismaClient, tx, news: db.newsItem };
   }
 
   it("saves machine translations and leaves failed items pending", async () => {
@@ -154,6 +154,57 @@ describe("translatePending", () => {
         },
       },
     ]);
+  });
+
+  it("sends only the English field of a half-localized order", async () => {
+    fetchMock.mockResolvedValue(gemini(["전선을 사수하라"]));
+    const { db, tx } = fakeDb({
+      assignment: [{ id: BigInt(1), title: "주요 명령", briefing: "Hold" }],
+    });
+
+    await translatePending(db, now);
+
+    expect(fetchMock.mock.calls[0][1]!.body).toContain('[\\"Hold\\"]');
+    expect(tx.mock.calls[0][0]).toMatchObject([
+      {
+        args: {
+          data: { titleKo: "주요 명령", briefingKo: "전선을 사수하라" },
+        },
+      },
+    ]);
+  });
+
+  it("alone, marks an item Gemini cannot answer as failed", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({ candidates: [{ finishReason: "SAFETY" }] }),
+      ),
+    );
+    const { db, news } = fakeDb({
+      newsItem: [
+        { id: BigInt(10), bodyEn: "Kill the bugs" },
+        { id: BigInt(11), bodyEn: "Next" },
+      ],
+    });
+
+    await expect(translatePending(db, now, true)).rejects.toThrow(SourceError);
+
+    expect(news.updateMany).toHaveBeenCalledExactlyOnceWith({
+      where: { id: BigInt(10), bodyEn: "Kill the bugs", translation: null },
+      data: { translation: "failed" },
+    });
+  });
+
+  it("keeps a whole batch pending when the answer fails", async () => {
+    fetchMock.mockResolvedValue(gemini(["하나"]));
+    const { db, news } = fakeDb({
+      newsItem: [
+        { id: BigInt(10), bodyEn: "One" },
+        { id: BigInt(11), bodyEn: "Two" },
+      ],
+    });
+    await expect(translatePending(db, now)).rejects.toThrow(SourceError);
+    expect(news.updateMany).not.toHaveBeenCalled();
   });
 
   it("does not call Gemini when nothing is pending", async () => {

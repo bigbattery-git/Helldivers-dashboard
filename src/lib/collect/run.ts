@@ -10,7 +10,10 @@ import {
   type CollectContext,
 } from "./arrowhead";
 import { collectSteamNews, collectSteamPlayers } from "./steam";
-import { translatePending } from "./translate";
+import {
+  TIMEOUT_MS as TRANSLATE_TIMEOUT_MS,
+  translatePending,
+} from "./translate";
 import { slotOf, SourceError } from "./util";
 import { checkDeletedX, collectX } from "./x";
 
@@ -18,6 +21,8 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 // Leaves room for the closing update (query_timeout 10s) and Sentry flush (2s) inside maxDuration 60s.
 export const DEADLINE_MS = 40_000;
+// Room for the translation writes after the Gemini call.
+const WRITE_MS = 5_000;
 
 type SourceResult =
   | ({ status: "ok"; ms: number } & Prisma.InputJsonObject)
@@ -26,9 +31,18 @@ type SourceResult =
 
 // One collection pass (SRS v3 §5). Each source is isolated: a failure is recorded and the rest continue (D-08).
 export async function runCollection(db: PrismaClient, now = new Date()) {
+  const started = performance.now();
   const run = await db.collectionRun.create({ data: { startedAt: now } });
   const slot = slotOf(now);
   const results: Record<string, SourceResult> = {};
+  // Awaited first thing in arrowhead(), so a failure is caught and recorded there.
+  const previous = db.collectionRun
+    .findFirst({
+      where: { finishedAt: { not: null } },
+      orderBy: { startedAt: "desc" },
+      select: { results: true },
+    })
+    .then((r) => r?.results as Record<string, SourceResult> | undefined);
 
   const fail = (name: string, error: unknown, ms?: number) => {
     const source = error instanceof SourceError ? error : undefined;
@@ -60,15 +74,8 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
   // Arrowhead calls stay sequential (one host); Steam runs alongside so a hanging host cannot starve it.
   const arrowhead = async () => {
     const mirror = newMirror();
-    const previous = await db.collectionRun.findFirst({
-      where: { finishedAt: { not: null } },
-      orderBy: { startedAt: "desc" },
-      select: { results: true },
-    });
     // A failed Status may mean a new war season, so the WarID is checked again.
-    const statusFailed =
-      (previous?.results as Record<string, SourceResult> | null)?.status
-        ?.status === "error";
+    const statusFailed = (await previous)?.status?.status === "error";
     // Daily refresh decided from DB state, so a missed slot or the first run still triggers it (D-02).
     let war = await db.war.findFirst({ orderBy: { id: "desc" } });
     if (
@@ -128,7 +135,17 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
   const translate = async () => {
     if (!process.env.GEMINI_API_KEY)
       results.translate = { status: "skipped", reason: "no key" };
-    else await step("translate", () => translatePending(db, now));
+    // The Gemini call and its writes must end before the deadline; the next run picks the text up.
+    else if (
+      performance.now() - started >
+      DEADLINE_MS - TRANSLATE_TIMEOUT_MS - WRITE_MS
+    )
+      results.translate = { status: "skipped", reason: "no time" };
+    else {
+      // After a failed batch, one item alone tells whether it breaks the answer.
+      const single = (await previous)?.translate?.status === "error";
+      await step("translate", () => translatePending(db, now, single));
+    }
   };
 
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -146,7 +163,9 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
         Promise.all([
           arrowhead().catch((error) => fail("arrowhead", error)),
           x().catch((error) => fail("x", error)),
-        ]).then(translate),
+        ])
+          .then(translate)
+          .catch((error) => fail("translate", error)),
         step("steamPlayers", () => collectSteamPlayers(db, slot)),
         step("steamNews", () => collectSteamNews(db)),
       ]),

@@ -467,6 +467,9 @@ describe("dispatchText", () => {
     expect(
       dispatchText("new", { bodyEn: null, translation: "official" }),
     ).toEqual({ bodyEn: "new" });
+    expect(
+      dispatchText("new", { bodyEn: "old", translation: "failed" }),
+    ).toMatchObject({ translation: null });
   });
 });
 
@@ -495,6 +498,15 @@ describe("official Korean replaces machine translation (ADR 0006)", () => {
     const stored = { title: "T", briefing: "B" };
     expect(orderText("T", "B", stored)).toEqual({ title: "T", briefing: "B" });
     expect(orderText("T2", "B", stored)).toMatchObject({ translation: null });
+  });
+
+  it("sends a half-localized order to the translate step", () => {
+    expect(orderText("주요 명령", "Hold the line")).toMatchObject({
+      translation: null,
+    });
+    expect(orderText("주요 명령", "")).toMatchObject({
+      translation: "official",
+    });
   });
 
   it("overwrites a translated dispatch when Korean arrives", async () => {

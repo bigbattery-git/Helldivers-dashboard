@@ -1,13 +1,14 @@
 import { z } from "zod";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { TERMS } from "@/lib/hd/terms";
-import { hasHangul, parseJson, SourceError } from "./util";
+import { isKorean, parseJson, SourceError } from "./util";
 
 // Machine translation of English game text with the Gemini free tier (ADR 0006).
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 // One request per run: at most 96 a day, far under the free daily quota.
 const BATCH = 20;
+export const TIMEOUT_MS = 15_000;
 
 const responseSchema = z.object({
   candidates: z
@@ -66,7 +67,7 @@ export async function translate(
         responseSchema: { type: "ARRAY", items: { type: "STRING" } },
       },
     }),
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
     cache: "no-store",
   });
   const body = await res.text();
@@ -88,9 +89,14 @@ export async function translate(
 }
 
 // Translates what is still English: current major orders, dispatches and X posts.
-// Failed items stay pending, so the next run retries them (D-08).
-export async function translatePending(db: PrismaClient, now: Date) {
-  const [orders, news, planets] = await Promise.all([
+// Failed items stay pending, so the next run retries them (D-08). After a failed batch the
+// caller passes `single`: one item alone shows whether it is what breaks every answer.
+export async function translatePending(
+  db: PrismaClient,
+  now: Date,
+  single = false,
+) {
+  const [orders, news] = await Promise.all([
     db.assignment.findMany({
       where: { translation: null, expiresAt: { gt: now } },
       select: { id: true, title: true, briefing: true },
@@ -106,44 +112,67 @@ export async function translatePending(db: PrismaClient, now: Date) {
       take: BATCH,
       select: { id: true, bodyEn: true },
     }),
-    db.planet.findMany({
-      where: { nameKo: { not: null } },
-      select: { nameEn: true, nameKo: true },
-    }),
   ]);
-  const english = orders.filter((o) => !hasHangul(o.title + o.briefing));
-  const texts = [
-    ...english.flatMap((o) => [o.title, o.briefing]),
-    ...news.map((n) => n.bodyEn!),
-  ].slice(0, BATCH);
+  // The original in `where`: text replaced since it was read keeps no stale translation.
+  const items = [
+    ...orders.map((o) => {
+      const fields = [o.title, o.briefing];
+      const where = { id: o.id, title: o.title, briefing: o.briefing };
+      return {
+        // A half-localized order sends only its English field; the Korean one is kept.
+        texts: fields.filter((t) => !isKorean(t)),
+        save: (ko: string[]) => {
+          const [titleKo, briefingKo] = fields.map((t) =>
+            isKorean(t) ? t : ko.shift()!,
+          );
+          return db.assignment.updateMany({
+            where,
+            data: { titleKo, briefingKo, translation: "machine" },
+          });
+        },
+        fail: () =>
+          db.assignment.updateMany({ where, data: { translation: "failed" } }),
+      };
+    }),
+    ...news.map((n) => {
+      const where = { id: n.id, bodyEn: n.bodyEn, translation: null };
+      return {
+        texts: [n.bodyEn!],
+        save: ([bodyKo]: string[]) =>
+          db.newsItem.updateMany({
+            where,
+            data: { bodyKo, translation: "machine" },
+          }),
+        fail: () =>
+          db.newsItem.updateMany({ where, data: { translation: "failed" } }),
+      };
+    }),
+  ].filter((i) => i.texts.length > 0);
+  let size = 0;
+  const batch = single
+    ? items.slice(0, 1)
+    : items.filter((i) => (size += i.texts.length) <= BATCH);
+  const texts = batch.flatMap((i) => i.texts);
   if (texts.length === 0) return { count: 0 };
 
-  const ko = await translate(texts, planets as PlanetName[]);
-  const writes = [
-    // The original in `where`: text replaced since it was read keeps no stale translation.
-    ...english.flatMap((o, i) => {
-      const [titleKo, briefingKo] = [ko[2 * i], ko[2 * i + 1]];
-      return titleKo && briefingKo
-        ? [
-            db.assignment.updateMany({
-              where: { id: o.id, title: o.title, briefing: o.briefing },
-              data: { titleKo, briefingKo, translation: "machine" },
-            }),
-          ]
-        : [];
-    }),
-    ...news.flatMap((n, i) => {
-      const bodyKo = ko[2 * english.length + i];
-      return bodyKo
-        ? [
-            db.newsItem.updateMany({
-              where: { id: n.id, bodyEn: n.bodyEn, translation: null },
-              data: { bodyKo, translation: "machine" },
-            }),
-          ]
-        : [];
-    }),
-  ];
+  const planets = await db.planet.findMany({
+    where: { nameKo: { not: null } },
+    select: { nameEn: true, nameKo: true },
+  });
+  let ko: (string | null)[];
+  try {
+    ko = await translate(texts, planets as PlanetName[]);
+  } catch (error) {
+    // Alone, an unusable answer is the item's own fault: it stays in English instead of blocking every batch.
+    if (single && error instanceof SourceError && error.kind === "validation")
+      await batch[0].fail();
+    throw error;
+  }
+  let at = 0;
+  const writes = batch.flatMap((i) => {
+    const out = ko.slice(at, (at += i.texts.length));
+    return out.every((t): t is string => t !== null) ? [i.save(out)] : [];
+  });
   await db.$transaction(writes);
   return { count: texts.length, translated: writes.length };
 }

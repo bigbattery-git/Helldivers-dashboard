@@ -1,6 +1,6 @@
 import { Markup } from "@/components/hud/Markup";
 import { RemainingTime } from "@/components/hud/RemainingTime";
-import { hasHangul } from "@/lib/collect/util";
+import { isKorean } from "@/lib/collect/util";
 import type { MajorOrder } from "@/lib/data/assignment";
 import { formatKst, formatPercent } from "@/lib/hd/format";
 
@@ -37,8 +37,8 @@ export function MajorOrderPanel({ orders }: { orders: MajorOrder[] }) {
             className="font-display text-[26px] font-bold leading-8 text-strong"
           >
             {o.title}
-            {/* English title: not translated yet, or seen only through the community mirror (F-05-2). */}
-            {(o.original || !hasHangul(o.title)) && (
+            {/* English text: not translated yet, or seen only through the community mirror (F-05-2). */}
+            {(o.original || !isKorean(o.title) || !isKorean(o.briefing)) && (
               <>
                 {" "}
                 <span className="ml-1 align-middle font-mono text-xs font-normal text-subtle">
