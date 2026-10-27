@@ -101,12 +101,12 @@
 - [x] E-05 GitHub Actions CI (format:check → lint → typecheck → test → build). GitHub Actions 통과 (PR #1)
 - [x] E-06 훅 실동작 확인 (편집 시 포맷·린트, 턴 종료 시 빌드: 통과·타입 오류 차단 모두 확인)
 - [x] E-06 CLAUDE.md에 명령어·아키텍처 갱신
-- [ ] E-07 첫 Preview 배포
+- [x] E-07 첫 Preview 배포 (2026-10-27, `chore/p4-deploy`. P4 배포 절 참고)
 
 ### P2 완료 기준
 - [x] 로컬 `pnpm build` 통과
 - [x] CI 녹색 (PR #1, run 40280731440, 2026-10-26)
-- [ ] Preview 배포 URL 확보
+- [x] Preview 배포 URL 확보 (2026-10-27, 브랜치 Preview. Vercel 로그인 보호가 기본으로 걸려 있음)
 - [x] 훅이 실제로 포맷·린트·빌드를 수행한다
 
 P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)은 사용자 작업으로 P3와 병행한다. 완료 기준 미충족 상태로 P3에 들어가는 예외는 사용자 결정이다 (2026-10-26).
@@ -238,7 +238,7 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard`. 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정. 생성 화면은 Americas·Europe·Asia-Pacific 일반 리전만 고를 수 있어 시드니 `ap-southeast-2`로 생성됨. 서울로 다시 만들지 않고 시드니 유지, 사용자 결정)
 - [x] E-02 E-03 Vercel 프로젝트 연결(함수 리전은 DB와 같은 Sydney `syd1`, `vercel.json`으로 고정. ADR 0003 "리전 맞춤"), 클라우드 마이그레이션 4개 적용(`prisma migrate deploy`), 배포 `/api/health` 200·`db: ok`. `vercel env pull`은 하지 않음: `.env.local`을 덮어써 로컬 dev가 클라우드 DB를 보게 되므로, 클라우드 대상 명령은 `.env.cloud`(`DIRECT_URL`·`COLLECT_URL`, gitignore)를 `node --env-file=.env.cloud`로 먼저 읽는다
 - [x] 클라우드 pg_cron 등록 (`COLLECT_URL`은 배포 URL) (2026-10-27: `collect`·`retention` 등록. 수동 수집 1회 전 소스 ok(번역 6건, X 5건), 13:00 UTC 슬롯을 cron이 호출해 200·7초, `collection_run` 기록 확인)
-- [ ] E-07 Preview 배포
+- [x] E-07 Preview 배포 (2026-10-27: `chore/p4-deploy` Preview READY, 함수 `syd1`, `/api/health` 200·`db: ok`. 첫 빌드는 Vercel 빌드 캐시로 설치가 건너뛰어져 `postinstall`의 `prisma generate`가 안 돌아 실패 → `build`에 `prisma generate`를 붙여 해결. 주의: 배포 직후 화면은 빌드 때 만든 빈 껍데기라 첫 요청은 "—"를 보이고, Production은 다음 수집의 `revalidateTag`, Preview는 15분 `revalidate` 뒤 첫 요청에서 채워진다)
 - [ ] Q-05 Vercel 사용량이 Hobby 한도의 50% 이하인지 확인 (함수 호출·ISR 쓰기, 하루 수집 후)
 
 ### S 우선순위 (일정이 남으면)
@@ -251,7 +251,7 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [ ] 홈 화면이 모바일 LCP 2.5초 이하다
 - [ ] 소스 하나를 일부러 실패시켰을 때 폴백·지연 배지가 동작한다
 - [ ] 클라우드 15분 수집이 24시간 연속(실패 슬롯 ≤ 2) 돌았다
-- [ ] Production 배포 URL을 확보했다
+- [x] Production 배포 URL을 확보했다 (`helldivers-dashboard.vercel.app`, 2026-10-27. 수집 후 홈에 실데이터 확인)
 - [ ] CI 녹색
 
 ## 백로그
