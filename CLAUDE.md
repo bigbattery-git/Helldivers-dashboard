@@ -35,6 +35,7 @@
 | `pnpm db:cron` | pg_cron에 15분 수집·30일 정리 작업 등록 (`CRON_SECRET` 필요, `COLLECT_URL` 기본은 로컬 dev 서버) |
 
 - 로컬에서는 `DATABASE_URL`·`DIRECT_URL`이 없으면 로컬 Supabase 기본 주소를 쓴다. 프로덕션은 `DATABASE_URL`이 없으면 오류를 낸다. 키 이름은 `.env.example`.
+- 클라우드 DB(Supabase 시드니, Vercel 함수 `syd1`)에 대한 명령은 `.env.cloud`(`DIRECT_URL`=Session pooler 5432, `COLLECT_URL`=배포 주소)를 먼저 읽어 실행한다: `node --env-file=.env.cloud node_modules/prisma/build/index.js migrate deploy`, cron 등록은 `node --env-file=.env.cloud scripts/cron-sql.mjs | node --env-file=.env.cloud node_modules/prisma/build/index.js db execute --stdin`. `vercel env pull`은 `.env.local`을 덮어쓰므로 쓰지 않는다.
 - Prisma 클라이언트는 `src/generated/prisma`에 생성되며(`postinstall`), 커밋하지 않는다.
 - CI(`.github/workflows/ci.yml`): `format:check → lint → typecheck → test → build`.
 
