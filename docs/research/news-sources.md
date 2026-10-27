@@ -187,6 +187,18 @@
 - https://docs.x.com/x-api/getting-started/pricing (1차)
 - 2차 참고: https://www.postproxy.dev/blog/x-api-pricing-2026/ , https://opentweet.io/x-api-pricing
 
+### 실측 (2026-10-27, Bearer 토큰, 1회)
+
+- `GET /2/users/by/username/helldivers2` → 200. **사용자 ID `1654403648598802436`** (2023-05-05 생성). 이 ID를 코드에 고정하면 사용자 조회($0.010)는 다시 하지 않아도 된다.
+- `GET /2/users/:id/tweets?max_results=5&exclude=retweets,replies&tweet.fields=created_at,lang,entities,attachments&expansions=attachments.media_keys&media.fields=type,url,preview_image_url` → 200, 5건. `max_results` 최솟값은 5다.
+  - 글마다 `id`, `created_at`(ISO UTC), `lang`(전부 `en`), `text`가 온다. 본문의 링크는 `t.co` 단축 주소이고, `entities.urls[].expanded_url`에 원래 주소가 있다(유튜브 카드에는 `title`·`images`도 있다).
+  - 영상 첨부는 `attachments.media_keys` → `includes.media[]`의 `preview_image_url`(썸네일)로 받는다.
+  - `meta.newest_id`가 다음 호출의 `since_id`다.
+- 레이트리밋 헤더: 사용자 조회 300, 사용자 글 목록 10,000, 사용량 조회 50 (모두 `x-rate-limit-reset` 기준 창). 15분 폴링과는 거리가 멀다.
+- `GET /2/usage/tweets` → `project_cap` 3,000,000, `cap_reset_day` 27, 호출 직후 `project_usage`는 `0`(바로 반영되지 않는 것으로 보인다). 실제 과금은 Developer Console에서 다시 본다.
+- 게시 빈도: 2026-10-26 16:01~19:00 UTC 3시간에 5건(Liberty Day). 이벤트 날에는 "하루 ~5건" 추정보다 많을 수 있다. 그래도 하루 20건 × 30일 × $0.005 = 월 $3 수준이다.
+- **글이 모두 영어다.** 한국어로 보여 주려면 ADR 0006의 기계 번역 대상에 X 글도 넣어야 한다(지금 ADR은 MO·디스패치만 다룬다).
+
 ---
 
 ## 6. X(트위터) — 비공식 수집 (프로필 페이지, 임베드, Nitter)
