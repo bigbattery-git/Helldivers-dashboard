@@ -54,7 +54,9 @@ export async function getWarOverview() {
 | `collection` | `getLastCollection()` (마지막 성공 시각, 소스별 상태) | 공통 헤더 |
 
 - `POST /api/collect`가 `runCollection` 뒤에 위 태그를 `revalidateTag(tag, "max")`로 무효화한다(Route Handler에서 호출 가능). 15분 `revalidate`는 무효화가 빠졌을 때를 위한 안전망이다.
-- **빌드 중 DB 접속을 막는 방법**: DB를 읽는 서버 컴포넌트를 `<Suspense>` 안에 두고, 그 컴포넌트가 데이터 함수를 부르기 전에 `await connection()`을 한다(`/api/health`와 같은 방식). 페이지 껍데기는 빌드 때 만들어지고, 데이터 부분은 첫 요청 때 `'use cache'` 결과로 채워진다. 이 조합이 의도대로 동작하는지는 기반 PR에서 `pnpm build`(DB 꺼진 상태)로 확인한다.
+- **데이터는 정적 껍데기(ISR)에 넣는다** (2026-10-27 정정). 서버리스에서는 `'use cache'`의 런타임 메모리 캐시가 요청 사이에 남지 않는다(`01-app/03-api-reference/01-directives/use-cache.md` "Serverless" 행). 그래서 `connection()`으로 요청 시점에 미루면 방문마다 함수 호출과 DB 조회가 생긴다(Q-01·Q-05에 불리). 대신 데이터 함수를 프리렌더 결과에 넣고, 수집이 `revalidateTag`로 껍데기를 다시 만들게 한다.
+- **빌드 중 DB 접속을 막는 방법**: 데이터 함수는 빌드 단계(`process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD`)에서 DB를 읽지 않고 빈 값을 돌려준다. 배포 직후 껍데기는 빈 상태이고, 다음 수집(최대 15분)의 `revalidateTag`나 15분 `revalidate`가 채운다. 기반 PR에서 DB를 끈 `pnpm build`와 로컬 `pnpm start`로 확인하고, Vercel에서의 동작은 배포 PR에서 다시 확인한다.
+- 대안(필요해지면): 은하 상황을 15분보다 자주 보여 줘야 하면 TanStack Query로 클라이언트가 우리 API(DB만 읽음)를 폴링하는 방식을 검토한다 (사용자 의견 2026-10-27).
 - `/planets/[index]`: Cache Components에서는 `generateStaticParams`가 값을 하나 이상 돌려줘야 한다. DB 없이 줄 수 있는 `{ index: "0" }`(슈퍼지구)만 돌려주고 나머지는 첫 요청 때 만든다. 없는 index는 `notFound()`.
 - **현재 시각이 필요한 표시는 클라이언트에서 계산한다.** 캐시된 HTML은 만든 시각에 멈춰 있기 때문이다. 카운트다운(MO 만료, 방어 남은 시간)과 "데이터 지연" 배지(마지막 수집 후 30분, F-05-1)는 서버가 시각(ISO)만 넘기고 클라이언트 컴포넌트가 1초 또는 1분마다 다시 그린다.
 
