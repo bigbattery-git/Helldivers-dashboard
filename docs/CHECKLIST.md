@@ -207,18 +207,18 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 
 ### X 수집 (ADR 0002)
 - [x] **[사용자]** X 개발자 계정·크레딧, `.env.local`에 `X_BEARER_TOKEN` (2026-10-27)
-- [ ] `@helldivers2` 새 글을 `since_id`로 15분마다 수집 → `news_item` + 테스트
-- [ ] 개발자 정책: X에서 삭제된 게시물은 `news_item`에서도 삭제, 작성 계정·원문 링크 표시
-- [ ] F-03-6 키가 없거나 실패해도 나머지 피드 동작 (X 항목만 빠짐)
+- [x] `@helldivers2` 새 글을 `since_id`로 15분마다 수집 → `news_item` + 테스트 (PR D2 `src/lib/collect/x.ts`. 첫 실행은 최근 5건, 이후 `since_id`. t.co 링크는 원래 주소로. 로컬 실수집에서 5건 저장 후 다음 실행 0건 확인)
+- [x] 개발자 정책: X에서 삭제된 게시물은 `news_item`에서도 삭제, 작성 계정·원문 링크 표시 (PR D2: 하루 1회 72시간 안의 글을 `GET /2/tweets?ids=`로 확인, `errors`에 오른 글 삭제. `collection_run`의 `xDeleted` 기록으로 하루 1회 판단. 실수집 5건 확인·0건 삭제. 화면에 "X @helldivers2"·"원문 보기 ↗")
+- [x] F-03-6 키가 없거나 실패해도 나머지 피드 동작 (X 항목만 빠짐) (PR D2: 토큰 없으면 `x` skipped, 실패는 소스별 격리. `run.test.ts`로 확인)
 - [ ] 첫 과금 내역을 보고 폴링 주기 조정 (필요하면 1시간)
 
 ### 기계 번역 (ADR 0006, D-12)
 - [x] **[사용자]** Google AI Studio에서 결제 연결 없이 API 키 발급, `.env.local`에 `GEMINI_API_KEY` (2026-10-27, 무료 티어로 번역 호출 200 확인)
-- [ ] 스키마: `assignment`에 `title_ko`·`briefing_ko`, `assignment`·`news_item`에 번역 출처(`official` / `machine`) + 마이그레이션
-- [ ] 번역 함수 (`gemini-3.5-flash-lite`, 모델 ID는 환경변수 `GEMINI_MODEL`): 공식 번역 용어표, 원문의 행성 이름 → `planet.name_ko`, `<i=N>` 마크업 보존(태그가 어긋나면 버림), 응답 zod 검증 + 테스트
-- [ ] 수집에 연결: 한글이 없는 MO 제목·브리핑, 디스패치 본문, X 글 본문. 같은 원문은 한 번만 번역. 실패·한도 초과 시 영어 원문 유지, 다음 수집 때 재시도 (D-08)
-- [ ] 공식 한국어가 오면 기계 번역을 덮어쓴다 + 테스트
-- [ ] F-02-1 F-03-2 화면에 "자동 번역" 표시와 원문 보기
+- [x] 스키마: `assignment`에 `title_ko`·`briefing_ko`, `assignment`·`news_item`에 번역 출처(`official` / `machine`) + 마이그레이션 (PR D2 `20261027130000_translation`, 열 이름 `translation`. `assignment.title`·`briefing`은 받은 원문 그대로)
+- [x] 번역 함수 (`gemini-3.5-flash-lite`, 모델 ID는 환경변수 `GEMINI_MODEL`): 공식 번역 용어표, 원문의 행성 이름 → `planet.name_ko`, `<i=N>` 마크업 보존(태그가 어긋나면 버림), 응답 zod 검증 + 테스트 (PR D2 `src/lib/collect/translate.ts`, fetch 모킹 테스트)
+- [x] 수집에 연결: 한글이 없는 MO 제목·브리핑, 디스패치 본문, X 글 본문. 같은 원문은 한 번만 번역. 실패·한도 초과 시 영어 원문 유지, 다음 수집 때 재시도 (D-08) (PR D2: Arrowhead·X 뒤 `translate` 단계, 실행당 Gemini 1회·최대 20건. 실수집 1회에 8건 보내 7행 번역, 2.1초. 다음 실행은 호출 없음)
+- [x] 공식 한국어가 오면 기계 번역을 덮어쓴다 + 테스트 (PR D2 `orderText`·`dispatchText`. 영어 원문이 바뀌어도 번역을 지우고 다시 번역)
+- [x] F-02-1 F-03-2 화면에 "자동 번역" 표시와 원문 보기 (PR D2: MO 제목 옆 "자동 번역" + 접이식 "(원문)", 뉴스·업데이트 내역 "자동 번역", 뉴스 펼침 안 "(원문)", 필터에 X. 로컬 가짜 영어 MO와 실제 디스패치·X 글로 확인. 360px에서 긴 URL 가로 스크롤 없음)
 
 ### 수집 보강 (PR #3 리뷰, 2026-10-27)
 - [x] 일일 단계: 행성 273개를 매번 upsert하지 않고, 새 행성이나 값이 바뀐 행성만 쓰기 (`existing` Map 재사용). WarInfo 좌표가 Status의 실시간 위치를 덮어쓰지 않게 (PR D1: 새 행성은 `createMany`, 바뀐 행성만 좌표 없이 `update`. 로컬 실수집에서 273개 중 쓰기 0건 + 테스트)

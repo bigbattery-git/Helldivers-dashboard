@@ -33,7 +33,7 @@ export function UpdatesPanel({ news }: { news: NewsEntry[] }) {
                 {formatKst(n.publishedAt, true)}
               </time>
               <div className="min-w-0">
-                <div className="hd-update__title">
+                <div className="hd-update__title wrap-anywhere">
                   {n.url ? (
                     <a
                       href={n.url}
@@ -47,9 +47,10 @@ export function UpdatesPanel({ news }: { news: NewsEntry[] }) {
                     title
                   )}
                 </div>
-                <div className="hd-update__desc line-clamp-2">
+                <div className="hd-update__desc line-clamp-2 wrap-anywhere">
                   <span className="font-mono">{kindLabel(n.kind)}</span>
                   {n.original && " · 원문"}
+                  {n.originalText && " · 자동 번역"}
                   {preview && ` · ${preview}`}
                 </div>
               </div>

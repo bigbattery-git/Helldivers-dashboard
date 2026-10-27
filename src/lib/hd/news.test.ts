@@ -49,5 +49,6 @@ it("turns Steam BBCode (API bodies) into plain paragraphs", () => {
 
 it("labels feed kinds", () => {
   expect(kindLabel("patch")).toBe("패치노트");
-  expect(kindLabel("x")).toBe("x");
+  expect(kindLabel("x")).toBe("X @helldivers2");
+  expect(kindLabel("unknown")).toBe("unknown");
 });

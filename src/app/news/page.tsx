@@ -23,8 +23,11 @@ export default async function NewsPage() {
       text:
         n.source === "dispatch"
           ? body.replace(/^\s*<i=3>[^<]*<\/i>\s*/, "") || stripMarkup(body)
-          : steamText(body),
+          : n.source === "x"
+            ? body
+            : steamText(body),
       original: n.original,
+      originalText: n.originalText,
       url: n.url,
       publishedAt: n.publishedAt,
     };

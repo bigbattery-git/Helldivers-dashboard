@@ -13,6 +13,8 @@ export type FeedEntry = {
   // dispatch: markup text; Steam: plain paragraphs (steamText). Never HTML.
   text: string;
   original: boolean;
+  // English text behind a machine translation (ADR 0006).
+  originalText: string | null;
   url: string | null;
   publishedAt: string;
 };
@@ -22,7 +24,17 @@ const FILTERS = [
   { value: "dispatch", label: "디스패치" },
   { value: "patch", label: "패치노트" },
   { value: "announcement", label: "공지" },
+  { value: "x", label: "X" },
 ];
+
+// Dispatches carry `<i=N>` markup; other bodies are plain paragraphs.
+function Body({ source, text }: { source: string; text: string }) {
+  return source === "dispatch" ? (
+    <Markup text={text} />
+  ) : (
+    <p className="whitespace-pre-line">{text}</p>
+  );
+}
 
 // News feed with a kind filter (F-03-1, F-03-3); each item opens to its full text (F-03-2, F-03-4).
 // Filtering stays in the browser so the page keeps its cached static shell.
@@ -65,12 +77,14 @@ export function NewsFeed({ entries }: { entries: FeedEntry[] }) {
                   {formatKst(e.publishedAt, true)}
                 </time>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-sm font-medium text-body">
+                  <span className="text-sm font-medium text-body wrap-anywhere">
                     {e.title}
                   </span>
                   <span className="font-mono text-[11px] text-subtle">
                     {kindLabel(e.kind)}
-                    {e.original && " · 원문"} · {formatKst(e.publishedAt)} KST
+                    {e.original && " · 원문"}
+                    {e.originalText && " · 자동 번역"} ·{" "}
+                    {formatKst(e.publishedAt)} KST
                   </span>
                 </span>
                 <span
@@ -80,11 +94,17 @@ export function NewsFeed({ entries }: { entries: FeedEntry[] }) {
                   ▾
                 </span>
               </summary>
-              <div className="flex flex-col gap-3 border-t border-line px-3 pt-3 pb-4 pl-[76px] text-sm leading-6 text-muted">
-                {e.source === "dispatch" ? (
-                  <Markup text={e.text} />
-                ) : (
-                  <p className="whitespace-pre-line">{e.text}</p>
+              <div className="flex flex-col gap-3 border-t border-line px-3 pt-3 pb-4 pl-[76px] text-sm leading-6 text-muted wrap-anywhere">
+                <Body source={e.source} text={e.text} />
+                {e.originalText && (
+                  <details>
+                    <summary className="cursor-pointer list-none font-mono text-xs text-subtle [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent">
+                      (원문)
+                    </summary>
+                    <div lang="en" className="mt-2 text-subtle">
+                      <Body source={e.source} text={e.originalText} />
+                    </div>
+                  </details>
                 )}
                 {e.url && (
                   <a

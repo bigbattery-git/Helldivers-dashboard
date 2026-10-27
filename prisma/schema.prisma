@@ -108,14 +108,19 @@ model Campaign {
 
 // Major orders. Text comes from one ko-KR request and may still be English (SRS v3 D-12).
 model Assignment {
-  id         BigInt   @id
-  title      String
-  briefing   String
-  tasks      Json
-  rewards    Json
-  startedAt  DateTime @map("started_at") @db.Timestamptz
-  expiresAt  DateTime @map("expires_at") @db.Timestamptz
-  lastSeenAt DateTime @map("last_seen_at") @db.Timestamptz
+  id          BigInt   @id
+  title       String
+  briefing    String
+  // Machine translation of English title/briefing (ADR 0006); null once official Korean arrives.
+  titleKo     String?  @map("title_ko")
+  briefingKo  String?  @map("briefing_ko")
+  // "official" | "machine"; null while English text waits for translation
+  translation String?
+  tasks       Json
+  rewards     Json
+  startedAt   DateTime @map("started_at") @db.Timestamptz
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz
+  lastSeenAt  DateTime @map("last_seen_at") @db.Timestamptz
 
   @@map("assignment")
 }
@@ -133,13 +138,15 @@ model AssignmentSnapshot {
 // Dispatches and Steam announcements in one feed.
 model NewsItem {
   id          BigInt   @id @default(autoincrement())
-  source      String // "dispatch" | "steam"
+  source      String // "dispatch" | "steam" | "x"
   externalId  String   @map("external_id")
-  kind        String // "dispatch" | "patch" | "announcement"
+  kind        String // "dispatch" | "patch" | "announcement" | "x"
   titleEn     String?  @map("title_en")
   bodyEn      String?  @map("body_en")
   titleKo     String?  @map("title_ko")
   bodyKo      String?  @map("body_ko")
+  // "official" | "machine" for the Korean text (ADR 0006); Steam leaves it null
+  translation String?
   url         String?
   publishedAt DateTime @map("published_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz

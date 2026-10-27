@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { getDb } from "@/lib/db";
 import { isBuildPhase, LIFE } from "./cache";
 
-export type NewsKind = "dispatch" | "patch" | "announcement";
+export type NewsKind = "dispatch" | "patch" | "announcement" | "x";
 
 export type NewsEntry = {
   id: string;
@@ -12,6 +12,8 @@ export type NewsEntry = {
   body: string | null;
   // No Korean text yet: the screen marks it as "원문" (F-03-2).
   original: boolean;
+  // English body behind a machine translation (ADR 0006).
+  originalText: string | null;
   url: string | null;
   publishedAt: string;
 };
@@ -39,6 +41,7 @@ export async function getNews(
       title: ko ? r.titleKo : r.titleEn,
       body: ko ? r.bodyKo : r.bodyEn,
       original: !ko,
+      originalText: r.translation === "machine" ? r.bodyEn : null,
       url: r.url,
       publishedAt: r.publishedAt.toISOString(),
     };

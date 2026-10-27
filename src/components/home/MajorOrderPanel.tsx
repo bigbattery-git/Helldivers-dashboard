@@ -37,12 +37,12 @@ export function MajorOrderPanel({ orders }: { orders: MajorOrder[] }) {
             className="font-display text-[26px] font-bold leading-8 text-strong"
           >
             {o.title}
-            {/* English title: a new order seen only through the community mirror (F-05-2). */}
-            {!hasHangul(o.title) && (
+            {/* English title: not translated yet, or seen only through the community mirror (F-05-2). */}
+            {(o.original || !hasHangul(o.title)) && (
               <>
                 {" "}
                 <span className="ml-1 align-middle font-mono text-xs font-normal text-subtle">
-                  원문
+                  {o.original ? "자동 번역" : "원문"}
                 </span>
               </>
             )}
@@ -50,6 +50,19 @@ export function MajorOrderPanel({ orders }: { orders: MajorOrder[] }) {
           <p className="text-sm leading-6 text-muted">
             <Markup text={o.briefing} />
           </p>
+          {o.original && (
+            <details className="-mt-2 text-xs leading-5 text-subtle">
+              <summary className="cursor-pointer list-none font-mono [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent">
+                (원문)
+              </summary>
+              <div lang="en" className="mt-2 flex flex-col gap-1">
+                <span className="font-medium">{o.original.title}</span>
+                <span>
+                  <Markup text={o.original.briefing} />
+                </span>
+              </div>
+            </details>
+          )}
           <ul className="flex flex-col gap-3">
             {o.tasks.map((t, i) => (
               <li key={i} className="flex flex-col gap-1.5">

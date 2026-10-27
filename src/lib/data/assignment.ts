@@ -14,6 +14,8 @@ export type MajorOrder = {
   id: string;
   title: string;
   briefing: string;
+  // English text behind a machine translation (ADR 0006); null for official or untranslated text.
+  original: { title: string; briefing: string } | null;
   expiresAt: string;
   tasks: TaskView[];
   rewards: string[];
@@ -49,8 +51,9 @@ export async function getAssignments(): Promise<MajorOrder[]> {
       const progress = (snap?.progress ?? []) as number[];
       return {
         id: o.id.toString(),
-        title: o.title,
-        briefing: o.briefing,
+        title: o.titleKo ?? o.title,
+        briefing: o.briefingKo ?? o.briefing,
+        original: o.titleKo ? { title: o.title, briefing: o.briefing } : null,
         expiresAt: o.expiresAt.toISOString(),
         tasks: (o.tasks as Task[]).map((t, i) =>
           describeTask(t, progress[i] ?? 0, (index) => nameOf.get(index)),
@@ -108,7 +111,7 @@ export async function getAssignmentSeries(): Promise<OrderSeries[]> {
           },
         ];
       });
-      return { id: o.id.toString(), title: o.title, tasks };
+      return { id: o.id.toString(), title: o.titleKo ?? o.title, tasks };
     }),
   );
 }

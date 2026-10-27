@@ -4,6 +4,8 @@ const KIND_LABELS: Record<string, string> = {
   dispatch: "디스패치",
   patch: "패치노트",
   announcement: "공지",
+  // The author is shown with every post (X developer policy).
+  x: "X @helldivers2",
 };
 
 export const kindLabel = (kind: string) => KIND_LABELS[kind] ?? kind;
