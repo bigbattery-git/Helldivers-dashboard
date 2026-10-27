@@ -6,6 +6,7 @@ import {
   collectStatus,
   collectWarInfo,
   collectWarStats,
+  newMirror,
   type CollectContext,
 } from "./arrowhead";
 import { collectSteamNews, collectSteamPlayers } from "./steam";
@@ -19,7 +20,7 @@ export const DEADLINE_MS = 40_000;
 type SourceResult =
   | ({ status: "ok"; ms: number } & Prisma.InputJsonObject)
   | { status: "error"; ms?: number; kind?: string; error: string }
-  | { status: "skipped" };
+  | { status: "skipped"; reason?: string };
 
 // One collection pass (SRS v3 §5). Each source is isolated: a failure is recorded and the rest continue (D-08).
 export async function runCollection(db: PrismaClient, now = new Date()) {
@@ -56,17 +57,32 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
 
   // Arrowhead calls stay sequential (one host); Steam runs alongside so a hanging host cannot starve it.
   const arrowhead = async () => {
+    const mirror = newMirror();
+    const previous = await db.collectionRun.findFirst({
+      where: { finishedAt: { not: null } },
+      orderBy: { startedAt: "desc" },
+      select: { results: true },
+    });
+    // A failed Status may mean a new war season, so the WarID is checked again.
+    const statusFailed =
+      (previous?.results as Record<string, SourceResult> | null)?.status
+        ?.status === "error";
     // Daily refresh decided from DB state, so a missed slot or the first run still triggers it (D-02).
     let war = await db.war.findFirst({ orderBy: { id: "desc" } });
     if (
       !war ||
+      statusFailed ||
       now.getTime() - war.infoUpdatedAt.getTime() > DAY_MS ||
       (await db.planet.count()) === 0
     ) {
-      await step("warInfo", () => collectWarInfo(db, now));
+      await step("warInfo", () => collectWarInfo(db, now, mirror));
       war = await db.war.findFirst({ orderBy: { id: "desc" } });
     } else results.warInfo = { status: "skipped" };
-    if (!war) return;
+    if (!war) {
+      for (const name of ["status", "assignment", "newsFeed", "warStats"])
+        results[name] = { status: "skipped", reason: "no war row" };
+      return;
+    }
 
     const ctx: CollectContext = {
       db,
@@ -74,6 +90,7 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
       slot,
       warId: war.id,
       offset: war.timeOffsetSec,
+      mirror,
     };
     await step("status", () => collectStatus(ctx));
     await step("assignment", () => collectAssignments(ctx));

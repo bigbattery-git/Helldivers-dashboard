@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { LastCollection } from "@/lib/data/collection";
 import { formatKst } from "@/lib/hd/format";
+import { FallbackBadge } from "./FallbackBadge";
 import { StaleBadge } from "./StaleBadge";
 
 // Compact header for pages below the dashboard (SRS v4 §9): back link, eyebrow, title,
@@ -32,7 +33,10 @@ export function SubpageHeader({
         <div className="hd-stat__value">
           {last ? formatKst(last.startedAt) : "—"}
         </div>
-        <StaleBadge startedAt={last?.startedAt ?? null} />
+        <div className="flex flex-wrap gap-1">
+          <StaleBadge startedAt={last?.startedAt ?? null} />
+          <FallbackBadge last={last} />
+        </div>
       </div>
     </header>
   );

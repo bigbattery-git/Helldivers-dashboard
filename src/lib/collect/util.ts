@@ -41,6 +41,7 @@ export async function fetchText(
   const text = await res.text();
   if (!res.ok)
     throw new SourceError(`HTTP ${res.status} ${url}`, "http", {
+      status: res.status,
       body: text.slice(0, 2048),
     });
   const date = res.headers.get("date");

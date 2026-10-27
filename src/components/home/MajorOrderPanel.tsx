@@ -1,5 +1,6 @@
 import { Markup } from "@/components/hud/Markup";
 import { RemainingTime } from "@/components/hud/RemainingTime";
+import { hasHangul } from "@/lib/collect/util";
 import type { MajorOrder } from "@/lib/data/assignment";
 import { formatKst, formatPercent } from "@/lib/hd/format";
 
@@ -36,6 +37,15 @@ export function MajorOrderPanel({ orders }: { orders: MajorOrder[] }) {
             className="font-display text-[26px] font-bold leading-8 text-strong"
           >
             {o.title}
+            {/* English title: a new order seen only through the community mirror (F-05-2). */}
+            {!hasHangul(o.title) && (
+              <>
+                {" "}
+                <span className="ml-1 align-middle font-mono text-xs font-normal text-subtle">
+                  원문
+                </span>
+              </>
+            )}
           </h2>
           <p className="text-sm leading-6 text-muted">
             <Markup text={o.briefing} />

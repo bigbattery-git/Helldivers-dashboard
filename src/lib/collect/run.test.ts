@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { collectStatus, collectWarInfo, collectWarStats } from "./arrowhead";
 import { DEADLINE_MS, runCollection } from "./run";
 import { collectSteamNews } from "./steam";
 
@@ -14,6 +15,7 @@ vi.mock("./arrowhead", () => ({
   collectAssignments: vi.fn(async () => ({})),
   collectNewsFeed: vi.fn(async () => ({})),
   collectWarStats: vi.fn(async () => ({})),
+  newMirror: () => ({ primaryDown: false, mirrorDown: false }),
 }));
 vi.mock("./steam", () => ({
   collectSteamPlayers: vi.fn(async () => ({})),
@@ -25,16 +27,26 @@ const now = new Date("2026-10-27T04:00:00Z");
 // Fresh war info and stats, so the daily and hourly steps are skipped.
 function fakeDb(update = vi.fn(async () => ({}))) {
   const db = {
-    collectionRun: { create: vi.fn(async () => ({ id: BigInt(1) })), update },
-    war: {
-      findFirst: vi.fn(async () => ({
-        id: 801,
-        infoUpdatedAt: now,
-        timeOffsetSec: 0,
+    collectionRun: {
+      create: vi.fn(async () => ({ id: BigInt(1) })),
+      update,
+      findFirst: vi.fn(async (): Promise<{ results: unknown } | null> => ({
+        results: { status: { status: "ok" } },
       })),
     },
+    war: {
+      findFirst: vi.fn(
+        async (): Promise<{
+          id: number;
+          infoUpdatedAt: Date;
+          timeOffsetSec: number;
+        } | null> => ({ id: 801, infoUpdatedAt: now, timeOffsetSec: 0 }),
+      ),
+    },
     planet: { count: vi.fn(async () => 273) },
-    warStatsSnapshot: { findFirst: vi.fn(async () => ({ slot: now })) },
+    warStatsSnapshot: {
+      findFirst: vi.fn(async () => ({ slot: now })),
+    },
   };
   return { db, client: db as unknown as PrismaClient };
 }
@@ -64,6 +76,43 @@ describe("runCollection", () => {
     expect(results.status).toMatchObject({ status: "ok" });
     expect(db.collectionRun.update).toHaveBeenCalledOnce();
     expect(Sentry.flush).toHaveBeenCalledOnce();
+  });
+
+  it("rechecks the war after the last run's Status failed", async () => {
+    const { db, client } = fakeDb();
+    db.collectionRun.findFirst.mockResolvedValueOnce({
+      results: { status: { status: "error" } },
+    });
+    const { results } = await runCollection(client, now);
+    expect(collectWarInfo).toHaveBeenCalledOnce();
+    expect(results.warInfo).toMatchObject({ status: "ok" });
+  });
+
+  it("skips the Arrowhead sources with a reason when no war is stored", async () => {
+    const { db, client } = fakeDb();
+    db.war.findFirst.mockResolvedValue(null);
+    const { results } = await runCollection(client, now);
+    for (const name of ["status", "assignment", "newsFeed", "warStats"])
+      expect(results[name]).toEqual({
+        status: "skipped",
+        reason: "no war row",
+      });
+    expect(collectStatus).not.toHaveBeenCalled();
+  });
+
+  it("collects war stats again after an hour", async () => {
+    const { db, client } = fakeDb();
+    db.warStatsSnapshot.findFirst.mockResolvedValueOnce({
+      slot: new Date(now.getTime() - 60 * 60_000),
+    });
+    const { results } = await runCollection(client, now);
+    expect(collectWarStats).toHaveBeenCalledOnce();
+    expect(results.warStats).toMatchObject({ status: "ok" });
+  });
+
+  it("skips war stats within the hour", async () => {
+    const { results } = await runCollection(fakeDb().client, now);
+    expect(results.warStats).toEqual({ status: "skipped" });
   });
 
   it("still flushes Sentry when closing the run fails", async () => {

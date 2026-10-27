@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FallbackBadge } from "@/components/hud/FallbackBadge";
 import { StaleBadge } from "@/components/hud/StaleBadge";
 import type { LastCollection } from "@/lib/data/collection";
 import type { PlayerPoint } from "@/lib/data/stats";
@@ -108,7 +109,10 @@ export function PageHeader({
           <div className="hd-stat__value">
             {last ? formatKst(last.startedAt) : "—"}
           </div>
-          <StaleBadge startedAt={last?.startedAt ?? null} />
+          <div className="flex flex-wrap gap-1">
+            <StaleBadge startedAt={last?.startedAt ?? null} />
+            <FallbackBadge last={last} />
+          </div>
         </div>
       </div>
     </header>

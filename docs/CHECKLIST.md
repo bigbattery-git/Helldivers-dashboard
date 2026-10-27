@@ -221,18 +221,18 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [ ] F-02-1 F-03-2 화면에 "자동 번역" 표시와 원문 보기
 
 ### 수집 보강 (PR #3 리뷰, 2026-10-27)
-- [ ] 일일 단계: 행성 273개를 매번 upsert하지 않고, 새 행성이나 값이 바뀐 행성만 쓰기 (`existing` Map 재사용). WarInfo 좌표가 Status의 실시간 위치를 덮어쓰지 않게
-- [ ] 동시 실행 방지: `pg_try_advisory_lock` 또는 `planet_effect`에 `UNIQUE (planet_index, effect_id) WHERE ended_at IS NULL` 부분 인덱스 (열린 구간 중복)
-- [ ] 전쟁 시즌 교체 감지: Status가 실패하면 다음 실행에서 WarID를 다시 확인. `war`가 없으면 나머지 소스를 `skipped`·`error`로 기록
-- [ ] `cron-sql.mjs`: 시크릿·URL에 `$`가 있으면 거부, 원격 DB일 때 `COLLECT_URL`은 https만 허용
-- [ ] offset 검증: `Number.isFinite`, 직전 값과 크게 다르면 이전 값 유지
-- [ ] 테스트: `runCollection`(소스 격리 D-08, 예외가 나도 `finished_at`, 일일·1시간 skip 조건), `collectStatus` 트랜잭션 조립, `authorized()` 길이 불일치·빈 시크릿
-- [ ] P4 화면: Steam 본문(`body_ko`·`body_en`) HTML은 sanitize한 뒤 렌더링
+- [x] 일일 단계: 행성 273개를 매번 upsert하지 않고, 새 행성이나 값이 바뀐 행성만 쓰기 (`existing` Map 재사용). WarInfo 좌표가 Status의 실시간 위치를 덮어쓰지 않게 (PR D1: 새 행성은 `createMany`, 바뀐 행성만 좌표 없이 `update`. 로컬 실수집에서 273개 중 쓰기 0건 + 테스트)
+- [x] 동시 실행 방지: `pg_try_advisory_lock` 또는 `planet_effect`에 `UNIQUE (planet_index, effect_id) WHERE ended_at IS NULL` 부분 인덱스 (열린 구간 중복) (PR D1: 부분 유니크 인덱스 `planet_effect_open_key`, Prisma `partialIndexes` 미리보기로 스키마에 선언 + 중복 정리 SQL. advisory lock은 트랜잭션 풀러에서 세션이 보장되지 않아 쓰지 않음. insert는 `skipDuplicates`)
+- [x] 전쟁 시즌 교체 감지: Status가 실패하면 다음 실행에서 WarID를 다시 확인. `war`가 없으면 나머지 소스를 `skipped`·`error`로 기록 (PR D1: 직전 실행의 `status`가 error면 일일 단계를 다시 돌림, `war`가 없으면 `skipped` + `reason`. 테스트로 확인)
+- [x] `cron-sql.mjs`: 시크릿·URL에 `$`가 있으면 거부, 원격 DB일 때 `COLLECT_URL`은 https만 허용 (PR D1: 5가지 조합을 종료 코드로 확인)
+- [x] offset 검증: `Number.isFinite`, 직전 값과 크게 다르면 이전 값 유지 (PR D1: 2분 넘게 차이 나면 이전 값 + 결과에 `offsetRejected`. 폴백 Status는 미러 스냅샷이 늦어 저장된 값 유지 + 테스트)
+- [x] 테스트: `runCollection`(소스 격리 D-08, 예외가 나도 `finished_at`, 일일·1시간 skip 조건), `collectStatus` 트랜잭션 조립, `authorized()` 길이 불일치·빈 시크릿 (PR D1: `authorized()`는 `src/lib/collect/auth.ts`로 분리)
+- [x] P4 화면: Steam 본문(`body_ko`·`body_en`) HTML은 sanitize한 뒤 렌더링 (PR C에서 HTML을 렌더링하지 않고 글자만 보여 주는 방식으로 대신함(`steamText`). `src`에 `dangerouslySetInnerHTML` 없음을 PR D1에서 확인)
 
 ### 커뮤니티 API 폴백 (D-03, F-05-2)
-- [ ] Arrowhead 원본 실패·검증 실패 시 해당 항목만 `api.helldivers2.dev`로 받기 (`X-Super-Client`·`X-Super-Contact` 헤더, 레이트리밋 5회/10초) + 테스트
-- [ ] `collection_run`에 소스별 폴백 여부 기록 (D-05)
-- [ ] F-05-2 폴백으로 받은 항목에 "영어 원문"·출처 표시, 헤더 데이터 상태에 "폴백" 표시
+- [x] Arrowhead 원본 실패·검증 실패 시 해당 항목만 `api.helldivers2.dev`로 받기 (`X-Super-Client`·`X-Super-Contact` 헤더, 레이트리밋 5회/10초) + 테스트 (PR D1: `/raw/api` 같은 경로. 429·네트워크·5xx면 그 실행에서 미러 중단, 원본이 죽으면 바로 미러로. 원본을 막고 로컬 실수집에서 Status·MO·디스패치 폴백 성공 확인. `COMMUNITY_API_CONTACT`가 없으면 폴백 안 함. WarID·WarInfo·Stats는 응답 모양만 확인)
+- [x] `collection_run`에 소스별 폴백 여부 기록 (D-05) (PR D1: 결과 항목에 `fallback: true`, 실수집 기록으로 확인)
+- [x] F-05-2 폴백으로 받은 항목에 "영어 원문"·출처 표시, 헤더 데이터 상태에 "폴백" 표시 (PR D1: 홈·하위 화면 LAST UPDATE 타일에 "폴백" 배지(설명: 커뮤니티 API(영어)), 한글 없는 MO 제목에 "원문". 폴백 MO는 제목·브리핑을 덮어쓰지 않고, 폴백 디스패치는 새 항목만. 화면은 로컬에서 확인, 360px 가로 스크롤 없음)
 
 ### 배포 (P2 잔여)
 - [ ] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard` (서울 `ap-northeast-2`). 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정)

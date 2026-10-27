@@ -29,7 +29,7 @@ SRS v2 §5의 수집 요구사항을 구현 가능한 수준으로 구체화한�
 | 실행 범위 | 로컬 Supabase Cron까지 확인. 클라우드 전환은 P2 완료 후 설정만 옮긴다 |
 | 행성 스냅샷 | 전 행성(약 273개)을 매 슬롯 저장 |
 | 정적 데이터 | 행성명(ko/en)·섹터를 DB에 저장한다. 진짜 정적인 값과 실제로 변하는 값(비활성화·위치·환경 효과)을 분리한다 |
-| 폴백 | 커뮤니티 API 폴백(D-03 후반)은 다음 단계. 이번에는 zod 검증과 실패 기록만 |
+| 폴백 | 커뮤니티 API 폴백(D-03 후반)은 P3 범위 밖이었고 P4 PR D1에서 구현했다(`/raw/api` 미러, CHECKLIST "커뮤니티 API 폴백"). P3는 zod 검증과 실패 기록만 |
 | 원본 응답 | 검증에 실패한 응답만 Sentry로 보낸다 |
 | 백필 | 하지 않는다 |
 
@@ -39,7 +39,7 @@ SRS v2 §5의 수집 요구사항을 구현 가능한 수준으로 구체화한�
 | --- | --- |
 | D-01 | 15분마다 `Status`, `v2/Assignment`(ko-KR), `NewsFeed`(ko-KR), Steam 동접자, Steam 뉴스 API·RSS를 수집한다 |
 | D-02 | `Stats/war/{id}/summary`는 마지막 저장이 1시간 넘었을 때, `WarID`·`WarInfo`·정적 행성 데이터는(정적 데이터가 실패해도 WarInfo는 저장하고 기존 이름 유지) 마지막 갱신이 24시간 넘었거나 `planet`이 비었을 때 수집한다. 판단은 슬롯 시각이 아니라 DB 상태로 한다(누락·첫 실행에 강함) |
-| D-03 | 모든 응답을 zod로 검증한다. 실패하면 해당 소스만 실패로 기록한다. 커뮤니티 API 폴백은 다음 단계 |
+| D-03 | 모든 응답을 zod로 검증한다. 실패하면 해당 소스만 실패로 기록한다. 커뮤니티 API 폴백은 P4 PR D1에서 추가 |
 | D-04 | 스냅샷은 15분 슬롯(`수집 시작 시각 + 1분`을 15분 단위로 내림, UTC. 1분은 앱·DB 시계 차이 허용)으로 저장하고 `UNIQUE(대상, slot)` + `skipDuplicates`로 같은 슬롯 재호출에 멱등하다 |
 | D-05 | 실행마다 `collection_run`에 소스별 `{status, ms, count?, error?}`를 남긴다 |
 | D-06 | pg_cron이 하루 1회 30일 지난 스냅샷·실행 기록·캠페인·이벤트를 삭제한다. 행성·효과 이력·MO·뉴스는 지우지 않는다 |
@@ -123,7 +123,7 @@ Arrowhead 묶음(1~7 중 1·2·3·4·7, 순차)과 Steam 두 소스는 동시에
 
 ## 8. 범위 밖
 
-X 수집, 커뮤니티 API 폴백, Training Manual 백필, `revalidateTag`(P4), watchdog·클라우드 Cron(배포 후), MO 태스크·보상·효과 이름 해석 표(P4), `planetRegions`·`globalEvents`·`spaceStations`·`planetAttacks` 저장.
+X 수집, 커뮤니티 API 폴백(P4 PR D1에서 구현), Training Manual 백필, `revalidateTag`(P4), watchdog·클라우드 Cron(배포 후), MO 태스크·보상·효과 이름 해석 표(P4), `planetRegions`·`globalEvents`·`spaceStations`·`planetAttacks` 저장.
 
 ## 9. P3 완료 기준
 
