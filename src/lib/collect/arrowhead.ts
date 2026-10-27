@@ -179,7 +179,8 @@ export async function collectWarInfo(db: PrismaClient, now: Date) {
   const war = {
     startedAt: new Date(info.startDate * 1000),
     endedAt: new Date(info.endDate * 1000),
-    infoUpdatedAt: now,
+    // Without static names, leave the daily step due so the next slot retries them.
+    infoUpdatedAt: names ? now : new Date(0),
   };
   await db.$transaction([
     db.war.upsert({

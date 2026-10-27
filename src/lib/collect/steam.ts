@@ -34,9 +34,12 @@ type RssItem = {
   publishedAt: Date;
 };
 
+// CDATA content is already literal; decoding entities in it would turn escaped text into markup.
 const decodeXml = (s: string) =>
+  s.match(/^<!\[CDATA\[([\s\S]*)\]\]>$/)?.[1] ?? decodeEntities(s);
+
+const decodeEntities = (s: string) =>
   s
-    .replace(/^<!\[CDATA\[([\s\S]*)\]\]>$/, "$1")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')

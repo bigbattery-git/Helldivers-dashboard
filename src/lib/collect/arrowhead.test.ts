@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import type { PrismaClient } from "@/generated/prisma/client";
 import {
   assignmentsSchema,
+  collectWarInfo,
   diffEffects,
   dispatchText,
   newsFeedSchema,
@@ -17,6 +19,36 @@ import planets from "./__fixtures__/planets.json";
 import stats from "./__fixtures__/stats.json";
 import status from "./__fixtures__/status.json";
 import warinfo from "./__fixtures__/warinfo.json";
+import { fetchJson } from "./util";
+
+vi.mock("./util", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./util")>()),
+  fetchJson: vi.fn(),
+}));
+
+describe("collectWarInfo", () => {
+  it("keeps the daily step due when static names fail", async () => {
+    vi.mocked(fetchJson).mockImplementation(async (url: string) => {
+      if (url.endsWith("/WarID"))
+        return { data: { id: 801 }, date: new Date() };
+      if (url.endsWith("/WarInfo"))
+        return { data: warInfoSchema.parse(warinfo), date: new Date() };
+      throw new Error("names down");
+    });
+    const tx = vi.fn(async (ops: unknown[]) => ops);
+    const db = {
+      planet: { findMany: async () => [], upsert: (args: unknown) => args },
+      war: { upsert: (args: unknown) => args },
+      $transaction: tx,
+    } as unknown as PrismaClient;
+
+    await expect(collectWarInfo(db, new Date())).rejects.toThrow("names down");
+    const [warUpsert] = tx.mock.calls[0][0] as {
+      update: { infoUpdatedAt: Date };
+    }[];
+    expect(warUpsert.update.infoUpdatedAt).toEqual(new Date(0));
+  });
+});
 
 // Fixtures are trimmed real responses from 2026-10-26, except status.planetEvents (none were live; community OpenAPI shape).
 describe("schemas accept real responses", () => {

@@ -13,6 +13,8 @@ import { slotOf, SourceError } from "./util";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
+// Leaves room for the closing update (query_timeout 10s) and Sentry flush (2s) inside maxDuration 60s.
+export const DEADLINE_MS = 40_000;
 
 type SourceResult =
   | ({ status: "ok"; ms: number } & Prisma.InputJsonObject)
@@ -85,21 +87,36 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
     else results.warStats = { status: "skipped" };
   };
 
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  // A hung source must not run into maxDuration, where the platform kills us before `finally`.
+  const deadline = new Promise<void>((resolve) => {
+    timer = setTimeout(() => {
+      fail("deadline", new Error(`collection exceeded ${DEADLINE_MS}ms`));
+      resolve();
+    }, DEADLINE_MS);
+  });
   try {
-    await Promise.all([
-      // Steps record their own failures; this only catches the DB reads between them.
-      arrowhead().catch((error) => fail("arrowhead", error)),
-      step("steamPlayers", () => collectSteamPlayers(db, slot)),
-      step("steamNews", () => collectSteamNews(db)),
+    await Promise.race([
+      Promise.all([
+        // Steps record their own failures; this only catches the DB reads between them.
+        arrowhead().catch((error) => fail("arrowhead", error)),
+        step("steamPlayers", () => collectSteamPlayers(db, slot)),
+        step("steamNews", () => collectSteamNews(db)),
+      ]),
+      deadline,
     ]);
   } finally {
-    // Always close the run, so a crash still leaves which sources finished (D-05).
-    await db.collectionRun.update({
-      where: { id: run.id },
-      data: { finishedAt: new Date(), results },
-    });
-    // Serverless may freeze right after the response; send queued Sentry events first (ADR 0005).
-    await Sentry.flush(2000);
+    clearTimeout(timer);
+    try {
+      // Always close the run, so a crash still leaves which sources finished (D-05).
+      await db.collectionRun.update({
+        where: { id: run.id },
+        data: { finishedAt: new Date(), results },
+      });
+    } finally {
+      // Serverless may freeze right after the response; send queued Sentry events first (ADR 0005).
+      await Sentry.flush(2000);
+    }
   }
   return { slot, results };
 }

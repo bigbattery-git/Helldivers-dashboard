@@ -20,6 +20,16 @@ describe("parseRss", () => {
     );
     expect(items[0].link).toMatch(/^https:\/\/store\.steampowered\.com\//);
   });
+
+  it("keeps CDATA content literal instead of decoding entities", () => {
+    const [item] = parseRss(
+      "<item><title><![CDATA[a &amp; b]]></title><link>https://x.test</link>" +
+        "<description><![CDATA[<p>&lt;script&gt;</p>]]></description>" +
+        "<pubDate>Thu, 22 Oct 2026 12:00:04 +0000</pubDate></item>",
+    );
+    expect(item.title).toBe("a &amp; b");
+    expect(item.description).toBe("<p>&lt;script&gt;</p>");
+  });
 });
 
 describe("mergeSteamNews", () => {
