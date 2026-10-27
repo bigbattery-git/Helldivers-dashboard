@@ -12,6 +12,7 @@ import {
   dispatchText,
   newMirror,
   newsFeedSchema,
+  orderText,
   planetEventSchema,
   staticPlanetsSchema,
   statusSchema,
@@ -447,7 +448,75 @@ describe("diffEffects", () => {
 describe("dispatchText", () => {
   it("routes untranslated dispatches to the English column", () => {
     const [ko, en] = newsFeedSchema.parse(newsfeed);
-    expect(dispatchText(ko.message)).toEqual({ bodyKo: ko.message });
+    expect(dispatchText(ko.message)).toEqual({
+      bodyKo: ko.message,
+      translation: "official",
+    });
     expect(dispatchText(en.message)).toEqual({ bodyEn: en.message });
+  });
+
+  it("drops a machine translation only when the English changes", () => {
+    const machine = { bodyEn: "old", translation: "machine" };
+    expect(dispatchText("old", machine)).toEqual({ bodyEn: "old" });
+    expect(dispatchText("new", machine)).toEqual({
+      bodyEn: "new",
+      bodyKo: null,
+      translation: null,
+    });
+    // Official Korean stays when English shows up later.
+    expect(
+      dispatchText("new", { bodyEn: null, translation: "official" }),
+    ).toEqual({ bodyEn: "new" });
+  });
+});
+
+describe("official Korean replaces machine translation (ADR 0006)", () => {
+  it("overwrites a translated major order when Korean arrives", async () => {
+    vi.mocked(fetchJson).mockResolvedValue({
+      data: assignmentsSchema.parse(assignment),
+      date: new Date(),
+    });
+    const [a] = assignmentsSchema.parse(assignment);
+    const { db, ops } = fakeDb({
+      assignment: [{ id: BigInt(a.id32), title: "Major Order", briefing: "x" }],
+    });
+
+    await collectAssignments(ctxOf(db, 0));
+
+    expect(ops()[0].args.update).toMatchObject({
+      title: a.setting.overrideTitle,
+      titleKo: null,
+      briefingKo: null,
+      translation: "official",
+    });
+  });
+
+  it("keeps the translation while the English stays the same", () => {
+    const stored = { title: "T", briefing: "B" };
+    expect(orderText("T", "B", stored)).toEqual({ title: "T", briefing: "B" });
+    expect(orderText("T2", "B", stored)).toMatchObject({ translation: null });
+  });
+
+  it("overwrites a translated dispatch when Korean arrives", async () => {
+    const ko = {
+      id: 1,
+      published: 84975052,
+      type: 0,
+      message: "<i=3>속보</i>",
+    };
+    vi.mocked(fetchJson).mockResolvedValue({
+      data: newsFeedSchema.parse([ko]),
+      date: new Date(),
+    });
+    const { db, ops } = fakeDb({
+      newsItem: [{ externalId: "1", bodyEn: "News", translation: "machine" }],
+    });
+
+    await collectNewsFeed(ctxOf(db, NEWS_OFFSET));
+
+    expect(ops()[0].args.update).toEqual({
+      bodyKo: ko.message,
+      translation: "official",
+    });
   });
 });

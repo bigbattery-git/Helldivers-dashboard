@@ -10,7 +10,9 @@ import {
   type CollectContext,
 } from "./arrowhead";
 import { collectSteamNews, collectSteamPlayers } from "./steam";
+import { translatePending } from "./translate";
 import { slotOf, SourceError } from "./util";
+import { checkDeletedX, collectX } from "./x";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -104,6 +106,31 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
     else results.warStats = { status: "skipped" };
   };
 
+  // X is optional and billed (ADR 0002): without a token the feed simply has no X items (F-03-6).
+  const x = async () => {
+    if (!process.env.X_BEARER_TOKEN) {
+      results.x = { status: "skipped", reason: "no token" };
+      return;
+    }
+    await step("x", () => collectX(db));
+    const checkedToday = await db.collectionRun.findFirst({
+      where: {
+        startedAt: { gt: new Date(now.getTime() - DAY_MS) },
+        results: { path: ["xDeleted", "status"], equals: "ok" },
+      },
+      select: { id: true },
+    });
+    if (checkedToday) results.xDeleted = { status: "skipped" };
+    else await step("xDeleted", () => checkDeletedX(db, now));
+  };
+
+  // After Arrowhead and X, so this run's new English text is translated right away (ADR 0006).
+  const translate = async () => {
+    if (!process.env.GEMINI_API_KEY)
+      results.translate = { status: "skipped", reason: "no key" };
+    else await step("translate", () => translatePending(db, now));
+  };
+
   let timer: ReturnType<typeof setTimeout> | undefined;
   // A hung source must not run into maxDuration, where the platform kills us before `finally`.
   const deadline = new Promise<void>((resolve) => {
@@ -116,7 +143,10 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
     await Promise.race([
       Promise.all([
         // Steps record their own failures; this only catches the DB reads between them.
-        arrowhead().catch((error) => fail("arrowhead", error)),
+        Promise.all([
+          arrowhead().catch((error) => fail("arrowhead", error)),
+          x().catch((error) => fail("x", error)),
+        ]).then(translate),
         step("steamPlayers", () => collectSteamPlayers(db, slot)),
         step("steamNews", () => collectSteamNews(db)),
       ]),

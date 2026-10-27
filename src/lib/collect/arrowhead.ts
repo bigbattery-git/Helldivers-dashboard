@@ -441,12 +441,21 @@ export async function collectAssignments(ctx: CollectContext) {
     assignmentsSchema,
     KO,
   );
+  const stored = new Map(
+    (
+      await ctx.db.assignment.findMany({
+        where: { id: { in: data.map((a) => BigInt(a.id32)) } },
+        select: { id: true, title: true, briefing: true },
+      })
+    ).map((o) => [o.id, o]),
+  );
   await ctx.db.$transaction([
     ...data.map((a) => {
-      const text = {
-        title: a.setting.overrideTitle,
-        briefing: a.setting.overrideBrief,
-      };
+      const text = orderText(
+        a.setting.overrideTitle,
+        a.setting.overrideBrief,
+        stored.get(BigInt(a.id32)),
+      );
       const row = {
         tasks: a.setting.tasks,
         rewards: a.setting.rewards,
@@ -473,9 +482,30 @@ export async function collectAssignments(ctx: CollectContext) {
   return { count: data.length, ...flag(fallback) };
 }
 
+// Official Korean replaces a machine translation; changed English drops it for the translate step (ADR 0006).
+export function orderText(
+  title: string,
+  briefing: string,
+  stored?: { title: string; briefing: string },
+) {
+  const reset = { titleKo: null, briefingKo: null };
+  if (hasHangul(title + briefing))
+    return { title, briefing, ...reset, translation: "official" };
+  return stored?.title === title && stored.briefing === briefing
+    ? { title, briefing }
+    : { title, briefing, ...reset, translation: null };
+}
+
 // Dispatch text goes to the ko or en column by content, so a later translation fills ko.
-export function dispatchText(message: string) {
-  return hasHangul(message) ? { bodyKo: message } : { bodyEn: message };
+// Official Korean replaces a machine translation; changed English drops it (ADR 0006).
+export function dispatchText(
+  message: string,
+  stored?: { bodyEn: string | null; translation: string | null },
+) {
+  if (hasHangul(message)) return { bodyKo: message, translation: "official" };
+  return stored?.translation === "machine" && stored.bodyEn !== message
+    ? { bodyEn: message, bodyKo: null, translation: null }
+    : { bodyEn: message };
 }
 
 // Every slot: last 7 days of dispatches, re-fetched to pick up late translations.
@@ -490,12 +520,23 @@ export async function collectNewsFeed(ctx: CollectContext) {
   );
   // The mirror ignores the query and returns the whole history (~1,100 entries).
   const recent = data.filter((d) => d.published >= from);
+  const stored = new Map(
+    (
+      await ctx.db.newsItem.findMany({
+        where: {
+          source: "dispatch",
+          externalId: { in: recent.map((d) => String(d.id)) },
+        },
+        select: { externalId: true, bodyEn: true, translation: true },
+      })
+    ).map((n) => [n.externalId, n]),
+  );
   await ctx.db.$transaction(
     recent.map((d) => {
       const where = {
         source_externalId: { source: "dispatch", externalId: String(d.id) },
       };
-      const text = dispatchText(d.message);
+      const text = dispatchText(d.message, stored.get(String(d.id)));
       return ctx.db.newsItem.upsert({
         where,
         create: {

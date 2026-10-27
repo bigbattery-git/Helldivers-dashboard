@@ -4,6 +4,8 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { collectStatus, collectWarInfo, collectWarStats } from "./arrowhead";
 import { DEADLINE_MS, runCollection } from "./run";
 import { collectSteamNews } from "./steam";
+import { translatePending } from "./translate";
+import { checkDeletedX, collectX } from "./x";
 
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
@@ -20,6 +22,13 @@ vi.mock("./arrowhead", () => ({
 vi.mock("./steam", () => ({
   collectSteamPlayers: vi.fn(async () => ({})),
   collectSteamNews: vi.fn(async () => ({})),
+}));
+vi.mock("./x", () => ({
+  collectX: vi.fn(async () => ({})),
+  checkDeletedX: vi.fn(async () => ({})),
+}));
+vi.mock("./translate", () => ({
+  translatePending: vi.fn(async () => ({})),
 }));
 
 const now = new Date("2026-10-27T04:00:00Z");
@@ -54,6 +63,47 @@ function fakeDb(update = vi.fn(async () => ({}))) {
 afterEach(() => {
   vi.useRealTimers();
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
+});
+
+describe("optional sources (F-03-6, ADR 0006)", () => {
+  it("skips X and translation without their keys", async () => {
+    vi.stubEnv("X_BEARER_TOKEN", "");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    const { results } = await runCollection(fakeDb().client, now);
+    expect(results.x).toEqual({ status: "skipped", reason: "no token" });
+    expect(results.translate).toEqual({ status: "skipped", reason: "no key" });
+    expect(collectX).not.toHaveBeenCalled();
+    expect(translatePending).not.toHaveBeenCalled();
+  });
+
+  it("keeps the other sources and still translates when X fails", async () => {
+    vi.stubEnv("X_BEARER_TOKEN", "t");
+    vi.stubEnv("GEMINI_API_KEY", "k");
+    vi.mocked(collectX).mockRejectedValueOnce(new Error("HTTP 402"));
+    const { results } = await runCollection(fakeDb().client, now);
+    expect(results.x).toMatchObject({ status: "error" });
+    expect(results.status).toMatchObject({ status: "ok" });
+    expect(results.steamNews).toMatchObject({ status: "ok" });
+    expect(results.translate).toMatchObject({ status: "ok" });
+  });
+
+  it("checks X deletions once a day", async () => {
+    vi.stubEnv("X_BEARER_TOKEN", "t");
+    const { db, client } = fakeDb();
+    // previous run, then no deletion check in the last 24 hours
+    db.collectionRun.findFirst
+      .mockResolvedValueOnce({ results: {} })
+      .mockResolvedValueOnce(null);
+    expect((await runCollection(client, now)).results.xDeleted).toMatchObject({
+      status: "ok",
+    });
+    expect(checkDeletedX).toHaveBeenCalledOnce();
+
+    const again = await runCollection(client, now);
+    expect(again.results.xDeleted).toEqual({ status: "skipped" });
+    expect(checkDeletedX).toHaveBeenCalledOnce();
+  });
 });
 
 describe("runCollection", () => {
