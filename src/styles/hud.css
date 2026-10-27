@@ -5,8 +5,10 @@
  * Spec and usage rules: docs/design-system/README.md
  */
 
-/* Tokens -> Tailwind utilities (bg-panel, border-line, text-subtle, text-accent, font-display, shadow-tooltip ...) */
-@theme {
+/* Tokens -> Tailwind utilities (bg-panel, border-line, text-subtle, text-accent, font-display, shadow-tooltip ...)
+ * `static`: always emit every variable. Faction colors reach components only as
+ * `var(--color-*)` in inline styles, which Tailwind cannot see and would otherwise drop. */
+@theme static {
   --color-base: #070b12; /* page background, inset rows inside panels */
   --color-panel: #0d1520; /* panels, stat tiles, tooltips */
   --color-sunken: #05080e; /* galaxy map well, image slots */
