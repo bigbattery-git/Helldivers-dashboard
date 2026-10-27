@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -58,6 +59,8 @@ model PlanetEffect {
   lastSeenAt  DateTime  @map("last_seen_at") @db.Timestamptz
 
   @@unique([planetIndex, effectId, startedAt])
+  // One open interval per planet and effect, so overlapping runs cannot open it twice.
+  @@unique([planetIndex, effectId], where: raw("ended_at IS NULL"), map: "planet_effect_open_key")
   @@index([endedAt])
   @@map("planet_effect")
 }

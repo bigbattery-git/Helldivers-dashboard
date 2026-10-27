@@ -57,7 +57,7 @@ Next.js 화면 (src/app)
 | `prisma/schema.prisma`, `prisma/migrations/` | DB 스키마와 마이그레이션. 연결 설정은 `prisma.config.ts` |
 | `src/lib/db.ts` | `getDb()` — Prisma 클라이언트(`@prisma/adapter-pg`)를 처음 호출할 때 만든다 |
 | `src/lib/db-url.ts` | DB URL 선택(환경변수 → 로컬 기본값, 프로덕션은 필수) |
-| `src/lib/collect/` | 수집: `run.ts`(소스별 격리 실행·`collection_run` 기록), `arrowhead.ts`·`steam.ts`(zod 검증·저장), `util.ts`(슬롯·전쟁 시간·fetch). 명세는 [SRS v3](docs/SRS-v3.md) |
+| `src/lib/collect/` | 수집: `run.ts`(소스별 격리 실행·`collection_run` 기록), `arrowhead.ts`·`steam.ts`(zod 검증·저장. Arrowhead가 실패하면 커뮤니티 API `/raw` 미러로 폴백, `COMMUNITY_API_CONTACT` 필요), `auth.ts`(Bearer 검증), `util.ts`(슬롯·전쟁 시간·fetch). 명세는 [SRS v3](docs/SRS-v3.md) |
 | `src/app/api/collect/route.ts` | `POST /api/collect` — Bearer `CRON_SECRET` 검증 후 수집 1회 |
 | `src/instrumentation.ts` | `SENTRY_DSN`이 있을 때만 서버 측 Sentry 초기화 (ADR 0005) |
 | `scripts/cron-sql.mjs` | `pnpm db:cron`이 실행하는 Cron 등록 SQL 생성 |

@@ -7,6 +7,8 @@ export type LastCollection = {
   startedAt: string;
   // Sources that failed in that run, for the header status (F-05-1).
   failed: string[];
+  // Sources served by the community mirror in that run (F-05-2).
+  fallback: string[];
 };
 
 // Last finished collection run (F-05-1, D-05).
@@ -21,9 +23,14 @@ export async function getLastCollection(): Promise<LastCollection | null> {
     select: { startedAt: true, results: true },
   });
   if (!run) return null;
-  const results = run.results as Record<string, { status?: string }>;
+  const results = run.results as Record<
+    string,
+    { status?: string; fallback?: boolean }
+  >;
+  const keys = Object.keys(results);
   return {
     startedAt: run.startedAt.toISOString(),
-    failed: Object.keys(results).filter((k) => results[k]?.status === "error"),
+    failed: keys.filter((k) => results[k]?.status === "error"),
+    fallback: keys.filter((k) => results[k]?.fallback === true),
   };
 }

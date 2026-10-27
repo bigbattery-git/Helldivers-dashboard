@@ -129,7 +129,7 @@ Arrowhead 원본을 20초마다 동기화해 정규화한 C# 서비스. MIT 라�
 | `/api/v1/planet-events` | 진행 중 디펜스 이벤트 (조사 시점 `[]`) | 2 B | - | 확인 |
 | `/api/v2/space-stations` (`/{index}`) | 우주 정거장(행성·전술 행동·비용) | 4.1 KB | 2.1 KB | 확인 |
 | `/api/v1/steam` | Steam 뉴스 프록시 | - | - | R-02 범위, 호출 안 함 |
-| `/raw/api/...` | Arrowhead 원본 캐시(위 A의 경로와 같음) | - | - | Assignment 1회 확인 |
+| `/raw/api/...` | Arrowhead 원본 캐시(위 A의 경로와 같음) | - | - | Assignment 1회 확인. 2026-10-27 추가 확인: WarID·WarInfo·Status·Assignment·Stats는 원본과 같은 모양, **NewsFeed만 키가 PascalCase**(`Id`, `Published`, `Type`, `Message`)이고 쿼리(`fromTimestamp`)를 무시해 전체 1,091건(465 KB)을 준다 |
 
 ### 실측 헤더 (확인)
 
@@ -171,7 +171,7 @@ Arrowhead 원본을 20초마다 동기화해 정규화한 C# 서비스. MIT 라�
 | --- | --- |
 | 소스/엔드포인트 | `GET https://api.helldivers2.dev/api/v1/{war,planets,campaigns,assignments,planet-events}`, `/api/v2/{dispatches,space-stations}`, `/raw/api/...` |
 | 공식 여부 | 커뮤니티 (Arrowhead와 무관하다고 명시) |
-| 인증 | 없음. `X-Super-Client`(앱/도메인 이름) 권장, 향후 **필수화 예정**이라고 README에 명시. `X-Super-Contact`는 선택 (미들웨어 코드에는 두 헤더를 모두 검사하는 경로가 있음) |
+| 인증 | 없음. `X-Super-Client`(앱/도메인 이름) 권장, 향후 **필수화 예정**이라고 README에 명시. `X-Super-Contact`는 선택 (미들웨어 코드에는 두 헤더를 모두 검사하는 경로가 있음). **2026-10-27 확인: 두 헤더가 모두 필수**, 없으면 400 `The X-Super-Client and X-Super-Contact headers are required` |
 | 응답 예시 | 위 코드 블록 |
 | 갱신 주기 | 원본을 20초마다 동기화 (`Synchronization.IntervalSeconds: 20`) |
 | 레이트리밋 | 문서상: 5회/10초. 실측: `x-ratelimit-limit: 5`, IP 단위 토큰 버킷 |

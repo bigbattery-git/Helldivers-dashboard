@@ -9,11 +9,8 @@ try {
 const secret = process.env.CRON_SECRET;
 // The local default only fits the local Supabase; a remote DB must be given its own URL.
 const direct = process.env.DIRECT_URL;
-if (
-  !process.env.COLLECT_URL &&
-  direct &&
-  !/@(127\.0\.0\.1|localhost)[:/]/.test(direct)
-) {
+const remote = direct && !/@(127\.0\.0\.1|localhost)[:/]/.test(direct);
+if (!process.env.COLLECT_URL && remote) {
   console.error("COLLECT_URL is required when DIRECT_URL is not local");
   process.exit(1);
 }
@@ -26,6 +23,16 @@ if (!secret) {
 }
 if (!/^https?:\/\//.test(url)) {
   console.error(`COLLECT_URL must be an http(s) URL: ${url}`);
+  process.exit(1);
+}
+// The bearer secret travels in the clear over http, so a remote DB must call https.
+if (remote && !url.startsWith("https://")) {
+  console.error(`COLLECT_URL must be https when DIRECT_URL is remote: ${url}`);
+  process.exit(1);
+}
+// Both are pasted inside $$ / $job$ dollar quotes below, where a `$` could close the quote.
+if (secret.includes("$") || url.includes("$")) {
+  console.error("CRON_SECRET and COLLECT_URL must not contain `$`");
   process.exit(1);
 }
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { fetchJson, hasHangul, SourceError, warTimeToDate } from "./util";
 
 // Primary game data source (ADR 0001). Every call needs Accept-Language, Status errors without it.
@@ -9,6 +9,24 @@ const KO = { "Accept-Language": "ko-KR" };
 const STATIC_PLANETS_URL =
   "https://raw.githubusercontent.com/helldivers-2/json/master/planets/planets.json";
 const WEEK_SEC = 7 * 24 * 60 * 60;
+// Community mirror of the same paths (D-03, docs/research/game-api.md B). English only, 5 calls per 10 s per IP.
+const MIRROR = "https://api.helldivers2.dev/raw/api";
+// War time and real time move together, so a larger jump means a bad Date header or clock.
+const OFFSET_DRIFT_SEC = 120;
+
+// Fallback state for one collection run, shared by every Arrowhead call.
+export type Mirror = { primaryDown: boolean; mirrorDown: boolean };
+export const newMirror = (): Mirror => ({
+  primaryDown: false,
+  mirrorDown: false,
+});
+
+// Network errors, timeouts and 5xx repeat on every call to that host within a run.
+const hostDown = (error: unknown) => {
+  if (!(error instanceof SourceError)) return true;
+  const status = error.extra?.status;
+  return typeof status === "number" && status >= 500;
+};
 
 export type CollectContext = {
   db: PrismaClient;
@@ -16,7 +34,60 @@ export type CollectContext = {
   slot: Date;
   warId: number;
   offset: number | null;
+  mirror: Mirror;
 };
+
+// Arrowhead first, then the community mirror for this one path when it fails (HTTP, network, validation).
+async function get<T>(
+  mirror: Mirror,
+  path: string,
+  schema: z.ZodType<T>,
+  headers: Record<string, string>,
+) {
+  const contact = process.env.COMMUNITY_API_CONTACT;
+  const canFall = Boolean(contact) && !mirror.mirrorDown;
+  let primaryError: unknown;
+  // Skipping a host already down keeps the run inside its deadline (8 s per hung call).
+  if (!(canFall && mirror.primaryDown)) {
+    try {
+      return {
+        ...(await fetchJson(BASE + path, schema, headers)),
+        fallback: false,
+      };
+    } catch (error) {
+      if (!canFall) throw error;
+      if (hostDown(error)) mirror.primaryDown = true;
+      primaryError = error;
+    }
+  }
+  try {
+    const res = await fetchJson(MIRROR + path, schema, {
+      ...headers,
+      "X-Super-Client": "helldivers-dashboard",
+      "X-Super-Contact": contact!,
+    });
+    return { ...res, fallback: true };
+  } catch (error) {
+    // 429: the 5-per-10-s bucket is empty, so no more mirror calls this run either.
+    if (
+      hostDown(error) ||
+      (error instanceof SourceError && error.extra?.status === 429)
+    )
+      mirror.mirrorDown = true;
+    const first =
+      primaryError instanceof Error
+        ? primaryError.message
+        : "Arrowhead skipped, down earlier in this run";
+    const message = `${first} (fallback: ${String(error)})`;
+    // A new error: a TimeoutError's message is read-only. SourceError keeps its kind and extra for Sentry.
+    throw primaryError instanceof SourceError
+      ? new SourceError(message, primaryError.kind, primaryError.extra)
+      : new Error(message, { cause: primaryError ?? error });
+  }
+}
+
+// Marks the source result as served by the mirror (D-05).
+const flag = (fallback: boolean) => (fallback ? { fallback: true } : {});
 
 const int = z.number().int();
 const position = z.object({ x: z.number(), y: z.number() });
@@ -103,8 +174,21 @@ export const assignmentsSchema = z.array(
   }),
 );
 
+// The mirror serves NewsFeed with PascalCase keys (checked 2026-10-27); other paths match Arrowhead.
+const mirrorDispatch = z
+  .object({ Id: int, Published: int, Type: int, Message: z.string() })
+  .transform((d) => ({
+    id: d.Id,
+    published: d.Published,
+    type: d.Type,
+    message: d.Message,
+  }));
+
 export const newsFeedSchema = z.array(
-  z.object({ id: int, published: int, type: int, message: z.string() }),
+  z.union([
+    z.object({ id: int, published: int, type: int, message: z.string() }),
+    mirrorDispatch,
+  ]),
 );
 
 export const warStatsSchema = z.object({
@@ -130,14 +214,14 @@ export function diffEffects<T extends EffectKey>(
 }
 
 // Daily: war season, WarInfo and static planet names → `war`, `planet` (SRS v3 D-02, D-09).
-export async function collectWarInfo(db: PrismaClient, now: Date) {
-  const { data: warId } = await fetchJson(
-    `${BASE}/WarSeason/current/WarID`,
-    warIdSchema,
-    EN,
-  );
+export async function collectWarInfo(
+  db: PrismaClient,
+  now: Date,
+  mirror: Mirror,
+) {
+  const warId = await get(mirror, "/WarSeason/current/WarID", warIdSchema, EN);
   const [infoRes, namesRes] = await Promise.allSettled([
-    fetchJson(`${BASE}/WarSeason/${warId.id}/WarInfo`, warInfoSchema, EN),
+    get(mirror, `/WarSeason/${warId.data.id}/WarInfo`, warInfoSchema, EN),
     fetchJson(STATIC_PLANETS_URL, staticPlanetsSchema),
   ]);
   if (infoRes.status === "rejected") throw infoRes.reason;
@@ -149,13 +233,8 @@ export async function collectWarInfo(db: PrismaClient, now: Date) {
     (await db.planet.findMany()).map((p) => [p.index, p]),
   );
   const changed: number[] = [];
-  const upserts = info.planetInfos.map((p) => {
-    const before = existing.get(p.index);
-    if (
-      before &&
-      (before.disabled !== p.disabled || before.maxHealth !== p.maxHealth)
-    )
-      changed.push(p.index);
+  const created: Prisma.PlanetCreateManyInput[] = [];
+  const updates = info.planetInfos.flatMap((p) => {
     const meta = names?.[String(p.index)];
     const nameData = {
       nameEn: meta?.name ?? `Planet ${p.index}`,
@@ -166,14 +245,28 @@ export async function collectWarInfo(db: PrismaClient, now: Date) {
       maxHealth: p.maxHealth,
       disabled: p.disabled,
       initialOwner: p.initialOwner,
-      positionX: p.position.x,
-      positionY: p.position.y,
     };
-    return db.planet.upsert({
-      where: { index: p.index },
-      create: { index: p.index, ...nameData, ...data },
-      update: names ? { ...nameData, ...data } : data,
-    });
+    const before = existing.get(p.index);
+    // Coordinates only on creation: Status keeps the live position afterwards.
+    if (!before) {
+      created.push({
+        index: p.index,
+        ...nameData,
+        ...data,
+        positionX: p.position.x,
+        positionY: p.position.y,
+      });
+      return [];
+    }
+    if (before.disabled !== p.disabled || before.maxHealth !== p.maxHealth)
+      changed.push(p.index);
+    const update = names ? { ...nameData, ...data } : data;
+    const same = Object.entries(update).every(
+      ([k, v]) => before[k as keyof typeof update] === v,
+    );
+    return same
+      ? []
+      : [db.planet.update({ where: { index: p.index }, data: update })];
   });
 
   const war = {
@@ -188,21 +281,38 @@ export async function collectWarInfo(db: PrismaClient, now: Date) {
       create: { id: info.warId, ...war },
       update: war,
     }),
-    ...upserts,
+    // skipDuplicates: a concurrent run may create the same planet first.
+    db.planet.createMany({ data: created, skipDuplicates: true }),
+    ...updates,
   ]);
   if (namesRes.status === "rejected") throw namesRes.reason;
-  return { count: upserts.length, changed };
+  return {
+    count: info.planetInfos.length,
+    created: created.length,
+    updated: updates.length,
+    changed,
+    ...flag(warId.fallback || infoRes.value.fallback),
+  };
 }
 
 // Every slot: planet snapshots, positions, campaigns, defense events, effect intervals.
 export async function collectStatus(ctx: CollectContext) {
   const { db, slot } = ctx;
-  const { data: status, date } = await fetchJson(
-    `${BASE}/WarSeason/${ctx.warId}/Status`,
-    statusSchema,
-    EN,
-  );
-  const offset = Math.round(date.getTime() / 1000) - status.time;
+  const {
+    data: status,
+    date,
+    fallback,
+  } = await get(ctx.mirror, `/WarSeason/${ctx.warId}/Status`, statusSchema, EN);
+  const measured = Math.round(date.getTime() / 1000) - status.time;
+  // shortcut: a real jump over 2 minutes is rejected forever, fix war.time_offset_sec by hand if it happens.
+  const accepted =
+    Number.isFinite(measured) &&
+    (ctx.offset == null ||
+      // Mirror snapshots trail its Date header by up to ~20 s, so a stored offset is kept.
+      (!fallback && Math.abs(measured - ctx.offset) <= OFFSET_DRIFT_SEC));
+  const offset = accepted ? measured : ctx.offset;
+  if (offset == null)
+    throw new Error(`war time offset invalid: ${measured}, none stored`);
   ctx.offset = offset;
 
   const events = z.array(planetEventSchema).safeParse(status.planetEvents);
@@ -227,10 +337,14 @@ export async function collectStatus(ctx: CollectContext) {
   const endedIds = new Set(ended.map((e) => e.id));
 
   await db.$transaction([
-    db.war.update({
-      where: { id: ctx.warId },
-      data: { timeOffsetSec: offset },
-    }),
+    ...(accepted
+      ? [
+          db.war.update({
+            where: { id: ctx.warId },
+            data: { timeOffsetSec: offset },
+          }),
+        ]
+      : []),
     db.planetSnapshot.createMany({
       data: status.planetStatus.map((s) => ({
         planetIndex: s.index,
@@ -307,6 +421,8 @@ export async function collectStatus(ctx: CollectContext) {
     moved: moved.map((s) => s.index),
     effectsStarted: started.length,
     effectsEnded: ended.length,
+    ...(accepted || fallback ? {} : { offsetRejected: measured }),
+    ...flag(fallback),
   };
 }
 
@@ -319,26 +435,30 @@ function requireOffset(ctx: CollectContext) {
 // Every slot: major orders in ko-KR (SRS v3 D-12).
 export async function collectAssignments(ctx: CollectContext) {
   const offset = requireOffset(ctx);
-  const { data, date } = await fetchJson(
-    `${BASE}/v2/Assignment/War/${ctx.warId}`,
+  const { data, date, fallback } = await get(
+    ctx.mirror,
+    `/v2/Assignment/War/${ctx.warId}`,
     assignmentsSchema,
     KO,
   );
   await ctx.db.$transaction([
     ...data.map((a) => {
-      const row = {
+      const text = {
         title: a.setting.overrideTitle,
         briefing: a.setting.overrideBrief,
+      };
+      const row = {
         tasks: a.setting.tasks,
         rewards: a.setting.rewards,
         startedAt: warTimeToDate(offset, a.startTime),
         expiresAt: new Date(date.getTime() + a.expiresIn * 1000),
         lastSeenAt: ctx.slot,
       };
+      // The mirror is English only: keep the stored Korean text, refresh the rest.
       return ctx.db.assignment.upsert({
         where: { id: BigInt(a.id32) },
-        create: { id: BigInt(a.id32), ...row },
-        update: row,
+        create: { id: BigInt(a.id32), ...text, ...row },
+        update: fallback ? row : { ...text, ...row },
       });
     }),
     ctx.db.assignmentSnapshot.createMany({
@@ -350,7 +470,7 @@ export async function collectAssignments(ctx: CollectContext) {
       skipDuplicates: true,
     }),
   ]);
-  return { count: data.length };
+  return { count: data.length, ...flag(fallback) };
 }
 
 // Dispatch text goes to the ko or en column by content, so a later translation fills ko.
@@ -362,13 +482,16 @@ export function dispatchText(message: string) {
 export async function collectNewsFeed(ctx: CollectContext) {
   const offset = requireOffset(ctx);
   const from = Math.floor(ctx.now.getTime() / 1000) - offset - WEEK_SEC;
-  const { data } = await fetchJson(
-    `${BASE}/NewsFeed/${ctx.warId}?maxEntries=1024&fromTimestamp=${from}`,
+  const { data, fallback } = await get(
+    ctx.mirror,
+    `/NewsFeed/${ctx.warId}?maxEntries=1024&fromTimestamp=${from}`,
     newsFeedSchema,
     KO,
   );
+  // The mirror ignores the query and returns the whole history (~1,100 entries).
+  const recent = data.filter((d) => d.published >= from);
   await ctx.db.$transaction(
-    data.map((d) => {
+    recent.map((d) => {
       const where = {
         source_externalId: { source: "dispatch", externalId: String(d.id) },
       };
@@ -381,17 +504,19 @@ export async function collectNewsFeed(ctx: CollectContext) {
           publishedAt: warTimeToDate(offset, d.published),
           ...text,
         },
-        update: text,
+        // Mirror text is English: only add new dispatches, never replace a Korean body.
+        update: fallback ? {} : text,
       });
     }),
   );
-  return { count: data.length };
+  return { count: recent.length, ...flag(fallback) };
 }
 
 // Hourly: galaxy-wide cumulative stats.
 export async function collectWarStats(ctx: CollectContext) {
-  const { data } = await fetchJson(
-    `${BASE}/Stats/war/${ctx.warId}/summary`,
+  const { data, fallback } = await get(
+    ctx.mirror,
+    `/Stats/war/${ctx.warId}/summary`,
     warStatsSchema,
     EN,
   );
@@ -399,5 +524,5 @@ export async function collectWarStats(ctx: CollectContext) {
     data: [{ slot: ctx.slot, galaxyStats: data.galaxy_stats }],
     skipDuplicates: true,
   });
-  return {};
+  return flag(fallback);
 }
