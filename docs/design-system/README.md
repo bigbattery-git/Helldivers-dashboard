@@ -67,6 +67,8 @@ Tailwind 유틸리티 이름 기준 (`bg-*`, `text-*`, `border-*` 모두 같은 
 
 실제 데이터에 맞춘 점 (2026-10-27, SRS v4 §9): KPI는 ACTIVE DIVERS · PLANETS LIBERATED · STEAM PLAYERS · LAST UPDATE 4칸. "진행 중인 미션" 자리는 활성 전선 목록("진행 중인 전선")이다. 별도 사이트 헤더 줄과 푸터 블록은 없고, 출처·비공식 고지는 맨 아래 한 줄이다. 지도 범례에는 세력별 전선 수·인원을 함께 쓴다.
 
+**2026-10-28 변경 (SRS v5)**: 전선 목록을 없애고 [지도 | 주요 명령] 아래에 주요 전선 카드(FrontCard) 최대 8개를 전체 폭 그리드(칸 최소 260px, 1280px 이상 4열 × 2행)로 둔다. 업데이트 내역은 그 아래 전체 폭 한 줄이다.
+
 해방 상태는 별도 패널로 두지 않는다. 지도 위 행성에 호버하거나 Tab으로 포커스하면 툴팁으로 보여준다.
 
 ## 컴포넌트
@@ -83,7 +85,7 @@ Tailwind 유틸리티 이름 기준 (`bg-*`, `text-*`, `border-*` 모두 같은 
 | HazardChip | `.hd-hazards`, `.hd-section-label`, `.hd-hazard`, `__name`, `__kind`, `__desc` | 환경 `--hz` 없음(info-soft), 적 변종 `--hz: var(--faction)` |
 | LiberationTooltip | `.hd-tip` + `__top/__title/__faction/__meta/__divider` | 아래 참고 |
 | DefenseTooltip | `.hd-tip.hd-tip--defense` + `__head/__banner/__body/__name-row/__kind/__desc/__foot`, `.hd-level`, `.hd-timer`, `.hd-outlook--good/--bad` | 아래 참고 |
-| MissionRow | `.hd-mission`, `__title`, `__planet`, `__meta` | 왼쪽 3px 세력 색, 메타 `LV 7 · 12분` |
+| FrontCard | `.hd-front(--defense)`, `__head`, `__kind`, `__eta`, `__name`, `__meta`, `__nums`, `__foot` | 세력 색 왼쪽 3px + 테두리 line, 방어는 `--defense`(info 테두리, 남은 시간 accent). 머리 → 이름·섹터·세력 → 막대 → `62.3412% 해방` + 시간당 변화 → 투입 인원 · 비율. 방어 카드는 막대 자리에 방어 툴팁과 같은 방어 진행 상황 / 적의 공세 상황 두 줄. 예상 시각은 글자로(SRS v5 U-05) |
 | UpdateItem | `.hd-update`, `__date`, `__title`, `__desc` | 최신순, 날짜는 info |
 
 ### 지도와 PlanetMarker

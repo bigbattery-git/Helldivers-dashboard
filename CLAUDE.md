@@ -103,6 +103,7 @@ Conventional Commits 형식에 한국어 subject를 쓴다.
 | `docs/SRS-v2.md` | 대시보드 기능 명세 (F-xx 기능, D-xx 수집, Q-xx 비기능) |
 | `docs/SRS-v3.md` | P3 데이터 수집 상세 명세 (D-01~D-12, 스키마, 실행 순서) |
 | `docs/SRS-v4.md` | P4 화면 구현 설계 (모듈 구조, 캐시 태그, 지도, PR 순서) |
+| `docs/SRS-v5.md` | UI 개편: 행성 상세 삭제, 주요 전선 카드 8개 (U-01~U-05) |
 | `docs/CHECKLIST.md` | 단계별 체크리스트. `- [ ]` / `- [x]` |
 | `docs/research/*.md` | P1 조사 결과. 소스마다 SRS §5의 표준 표를 채운다 |
 | `docs/adr/NNNN-<slug>.md` | 결정 기록. `0000-template.md` 형식을 따른다 |

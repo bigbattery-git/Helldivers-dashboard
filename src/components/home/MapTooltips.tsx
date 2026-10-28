@@ -8,9 +8,8 @@ import { tooltipEffects } from "@/lib/hd/effects";
 import { formatNumber, formatPercent, formatRate } from "@/lib/hd/format";
 import { factionOf } from "@/lib/hd/terms";
 
-// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip"),
-// also used large on the planet page. Time-based figures wait for the browser clock:
-// the planet page is a cached server render that cannot know the current time.
+// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip").
+// Time-based figures wait for the browser clock: the cached page cannot know the current time.
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -115,13 +114,53 @@ export function LiberationTooltip({
 const HEX = "M6 1 L11 4 V8 L6 11 L1 8 V4 Z";
 const SHIELD = "M14 3 L24 7 V14 C24 20 19 24 14 26 C9 24 4 20 4 14 V7 Z";
 
-export function DefenseTooltip({ front }: { front: Front }) {
+// Defense progress vs the enemy's offensive (elapsed event time), shared by the
+// defense tooltip and the front cards (SRS v5 U-04). Digits default to the tooltip's.
+export function DefenseBars({
+  front,
+  percentDigits = 0,
+  rateDigits = 1,
+}: {
+  front: Front;
+  percentDigits?: number;
+  rateDigits?: number;
+}) {
   const defense = front.defense!;
   const now = useNow();
   const start = new Date(defense.startedAt);
   const end = new Date(defense.expiresAt);
   const enemy = now ? enemyProgress(start, end, now) : 0;
   const enemyPerHour = 3_600_000 / (end.getTime() - start.getTime());
+  return (
+    <>
+      <div className="flex flex-col gap-1">
+        <div className="hd-row">
+          <span>방어 진행 상황</span>
+          <span className="hd-row__value">
+            {front.perHour !== null &&
+              `${formatRate(front.perHour, rateDigits)} · `}
+            {formatPercent(front.progress, percentDigits)}
+          </span>
+        </div>
+        <Bar ratio={front.progress} fill="var(--color-info)" thick />
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="hd-row">
+          <span>적의 공세 상황</span>
+          <span className="hd-row__value">
+            {formatRate(enemyPerHour, rateDigits)} ·{" "}
+            {now ? formatPercent(enemy, percentDigits) : "—"}
+          </span>
+        </div>
+        <Bar ratio={enemy} fill="var(--faction)" thick />
+      </div>
+    </>
+  );
+}
+
+export function DefenseTooltip({ front }: { front: Front }) {
+  const now = useNow();
+  const end = new Date(front.defense!.expiresAt);
   const outlook =
     now && defenseOutlook(front.progress, front.perHour, end, now);
   return (
@@ -173,28 +212,10 @@ export function DefenseTooltip({ front }: { front: Front }) {
         <div className="hd-timer">
           <span className="hd-timer__label">남은 시간</span>
           <span className="hd-timer__value">
-            <Countdown to={defense.expiresAt} />
+            <Countdown to={front.defense!.expiresAt} />
           </span>
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="hd-row">
-            <span>방어 진행 상황</span>
-            <span className="hd-row__value">
-              {front.perHour !== null && `${formatRate(front.perHour)} · `}
-              {formatPercent(front.progress)}
-            </span>
-          </div>
-          <Bar ratio={front.progress} fill="var(--color-info)" thick />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="hd-row">
-            <span>적의 공세 상황</span>
-            <span className="hd-row__value">
-              {formatRate(enemyPerHour)} · {now ? formatPercent(enemy) : "—"}
-            </span>
-          </div>
-          <Bar ratio={enemy} fill="var(--faction)" thick />
-        </div>
+        <DefenseBars front={front} />
         <Effects ids={front.effectIds} />
         <div className="hd-row">
           <span>투입 인원</span>
