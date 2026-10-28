@@ -42,5 +42,8 @@ describe("numbers", () => {
     expect(formatRate(0.024)).toBe("+2.4%/h");
     expect(formatRate(-0.031)).toBe("-3.1%/h");
     expect(formatRate(-0.0001)).toBe("0.0%/h");
+    expect(formatRate(0.0001, 3)).toBe("+0.010%/h");
+    expect(formatRate(-0.000001, 3)).toBe("0.000%/h");
+    expect(formatRate(0.000001, 3)).toBe("0.000%/h");
   });
 });

@@ -8,9 +8,8 @@ import { tooltipEffects } from "@/lib/hd/effects";
 import { formatNumber, formatPercent, formatRate } from "@/lib/hd/format";
 import { factionOf } from "@/lib/hd/terms";
 
-// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip"),
-// also used large on the planet page. Time-based figures wait for the browser clock:
-// the planet page is a cached server render that cannot know the current time.
+// Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip").
+// Time-based figures wait for the browser clock: the cached page cannot know the current time.
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {

@@ -44,7 +44,7 @@ export const formatPercent = (ratio: number, digits = 0) =>
   `${(ratio * 100).toFixed(digits)}%`;
 
 // Change of a 0..1 ratio per hour: 0.024 -> "+2.4%/h"
-export function formatRate(perHour: number) {
-  const pct = (perHour * 100).toFixed(1);
-  return `${perHour > 0 ? "+" : ""}${pct === "-0.0" ? "0.0" : pct}%/h`;
+export function formatRate(perHour: number, digits = 1) {
+  const pct = (perHour * 100).toFixed(digits);
+  return `${Number(pct) > 0 ? "+" : ""}${Number(pct) === 0 ? (0).toFixed(digits) : pct}%/h`;
 }

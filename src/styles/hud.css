@@ -405,29 +405,75 @@
     white-space: nowrap;
   }
 
-  .hd-mission {
+  .hd-front {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
     padding: 12px;
     background: var(--color-base);
+    border: 1px solid var(--color-line);
     border-left: 3px solid var(--faction);
   }
-  .hd-mission__title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-body);
+  .hd-front--defense {
+    border-top-color: var(--color-info);
+    border-right-color: var(--color-info);
+    border-bottom-color: var(--color-info);
   }
-  .hd-mission__planet {
+  .hd-front__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--color-subtle);
+  }
+  .hd-front__kind {
+    letter-spacing: 2px;
+    color: var(--color-muted);
+  }
+  .hd-front--defense .hd-front__kind {
+    color: var(--color-info);
+  }
+  .hd-front__eta {
+    display: flex;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hd-front__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 700;
+    color: var(--color-strong);
+  }
+  .hd-front__meta {
     font-size: 12px;
     color: var(--color-subtle);
   }
-  .hd-mission__meta {
+  .hd-front__nums {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-body);
+    font-variant-numeric: tabular-nums;
+  }
+  .hd-front__foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-line);
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--color-muted);
-    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 
   .hd-update {
