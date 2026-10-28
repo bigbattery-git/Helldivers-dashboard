@@ -25,7 +25,7 @@ const facility = (name: string, desc: string): Effect => ({
 
 const JET = enemy("제트 여단", "점프 팩을 단 오토마톤 부대가 출현합니다.");
 const PREDATOR = enemy(
-  "포식자 변종",
+  "프레데터 변종",
   "글룸으로 강화된 테르미니드가 숨어 있다가 기습합니다.",
 );
 const SPORE = enemy(
@@ -37,7 +37,7 @@ const INCINERATION = enemy(
   "화염 무기로 무장한 오토마톤 부대가 출현합니다.",
 );
 const RUPTURE = enemy(
-  "파열 변종",
+  "럽처 변종",
   "땅속에서 솟구치는 테르미니드가 출현합니다.",
 );
 const DRAGONROACH = enemy(
@@ -53,12 +53,12 @@ const CYBORG = enemy(
   "사이보그가 오토마톤 군대를 이끌고 출현합니다.",
 );
 const MINDLESS = enemy(
-  "무념의 무리",
+  "무분별한 대중",
   "일루미닛이 시민을 개조한 무리가 대량으로 출현합니다.",
 );
-const APPROPRIATORS = enemy("징발대", "일루미닛 정규 병력만 출현합니다.");
+const APPROPRIATORS = enemy("적임자", "일루미닛 정규 병력만 출현합니다.");
 const VOTE_SNATCHERS = enemy(
-  "투표 강탈자",
+  "보트 스내처",
   "새로운 일루미닛 개조 병력이 출현합니다.",
 );
 const INVASION_FLEET = enemy(
