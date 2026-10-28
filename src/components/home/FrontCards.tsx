@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { DefenseBars } from "@/components/home/MapTooltips";
 import { Countdown } from "@/components/hud/Countdown";
 import { PlanetName } from "@/components/hud/PlanetName";
 import { RemainingTime } from "@/components/hud/RemainingTime";
@@ -64,7 +65,7 @@ export function FrontCards({
       {fronts.length === 0 ? (
         <p className="text-sm text-subtle">진행 중인 전선이 없습니다.</p>
       ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-3">
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-3">
           {fronts.map((f) => (
             <li
               key={f.index}
@@ -98,26 +99,29 @@ export function FrontCards({
                   )}
                 </div>
               </div>
-              {/* Decorative: the same figure follows as text. */}
-              <div className="hd-bar" aria-hidden="true">
-                <div
-                  className="hd-bar__fill"
-                  style={
-                    {
-                      width: formatPercent(f.progress, 1),
-                      "--fill": f.defense
-                        ? "var(--color-info)"
-                        : "var(--faction)",
-                    } as CSSProperties
-                  }
-                />
-              </div>
-              <div className="hd-front__nums">
-                <span>
-                  {formatPercent(f.progress, 4)} {f.defense ? "방어" : "해방"}
-                </span>
-                {f.perHour !== null && <Rate perHour={f.perHour} />}
-              </div>
+              {f.defense ? (
+                // Same split as the defense tooltip: our progress vs the enemy's offensive.
+                <DefenseBars front={f} percentDigits={4} rateDigits={3} />
+              ) : (
+                <>
+                  {/* Decorative: the same figure follows as text. */}
+                  <div className="hd-bar" aria-hidden="true">
+                    <div
+                      className="hd-bar__fill"
+                      style={
+                        {
+                          width: formatPercent(f.progress, 1),
+                          "--fill": "var(--faction)",
+                        } as CSSProperties
+                      }
+                    />
+                  </div>
+                  <div className="hd-front__nums">
+                    <span>{formatPercent(f.progress, 4)} 해방</span>
+                    {f.perHour !== null && <Rate perHour={f.perHour} />}
+                  </div>
+                </>
+              )}
               <div className="hd-front__foot">
                 <span>투입 인원</span>
                 <span className="text-strong">
