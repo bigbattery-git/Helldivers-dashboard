@@ -246,6 +246,17 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] Q-04 Q-03 360·1440px 가로 스크롤 없음, "(원문)" 버튼 키보드 포커스 (1280·1440px 4열, 360px 1열 확인)
 - [x] 검사 통과 (format·lint·typecheck·test·build, 로컬)
 
+### 자동 갱신 (SRS v6, 2026-10-29)
+
+요구사항은 [SRS v6](SRS-v6.md)를 따른다.
+- [x] SRS v6 작성, 체크리스트·CLAUDE.md 반영
+- [x] A-01 슬롯 + 2분이 지났는데 화면 수집 시각이 이번 슬롯보다 이르면 1분마다 `router.refresh()` + 판단 함수 테스트 (`behind` 7건, `StaleBadge`의 1분 판단에 붙임. 처음 만든 시각 고정 `AutoRefresh`는 첫 refresh가 옛 RSC를 받아 삭제. 로컬 `next start`: 04:00 수집 뒤 첫 refresh는 옛것, 1분 뒤 재시도에서 13:00으로 바뀌고 이후 요청 멈춤, 전체 새로고침 없음)
+- [x] A-02 숨긴 탭은 받지 않고, 다시 보일 때 바로 판단 (로컬: 숨김 상태로 02:47 tick에 요청 없음 → 보이게 하자 1회, 최신 상태에서 다시 보여도 추가 요청 없음)
+- [x] A-03 갱신 뒤 LAST UPDATE·지연 배지가 새 수집 기준으로 바뀐다 (로컬: "— 데이터 지연" → "10.29 13:00", 배지 사라짐)
+- [x] A-04 수집 직후 `revalidateTag(tag, { expire: 0 })` (로컬 `next start`: 수집 12초 뒤 첫 요청부터 `/`·`/news` 모두 `HIT` + 새 수집 시각, 2회 반복 확인. 이전 `"max"`는 예열 뒤에도 몇 번의 요청 동안 옛 화면)
+- [x] 검사 통과 (format·lint·typecheck·test·build, 로컬)
+- [ ] 운영 확인: 열어 둔 홈이 x2~x3분에 새 수집 시각으로 바뀌고, 그 요청이 캐시 `HIT` (배포 후)
+
 ### 배포 (P2 잔여)
 - [x] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard`. 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정. 생성 화면은 Americas·Europe·Asia-Pacific 일반 리전만 고를 수 있어 시드니 `ap-southeast-2`로 생성됨. 서울로 다시 만들지 않고 시드니 유지, 사용자 결정)
 - [x] E-02 E-03 Vercel 프로젝트 연결(함수 리전은 DB와 같은 Sydney `syd1`, `vercel.json`으로 고정. ADR 0003 "리전 맞춤"), 클라우드 마이그레이션 4개 적용(`prisma migrate deploy`), 배포 `/api/health` 200·`db: ok`. `vercel env pull`은 하지 않음: `.env.local`을 덮어써 로컬 dev가 클라우드 DB를 보게 되므로, 클라우드 대상 명령은 `.env.cloud`(`DIRECT_URL`·`COLLECT_URL`, gitignore)를 `node --env-file=.env.cloud`로 먼저 읽는다
