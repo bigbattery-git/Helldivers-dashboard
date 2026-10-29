@@ -18,10 +18,10 @@ export async function POST(request: Request) {
   )
     return Response.json({ ok: false }, { status: 401 });
   const { slot, results } = await runCollection(getDb());
-  // Rebuild the cached screens from the new rows (D-07); stale pages serve until then.
-  for (const tag of TAGS) revalidateTag(tag, "max");
-  // "max" hands the stale page to the first request, which on a quiet site is a visitor hours later.
-  // Request the pages ourselves so that first request is this one and visitors get the fresh render.
+  // Expire the cached screens now (D-07): with "max" the page and its cached reads each served
+  // one more stale round, so the warm-up below and open tabs at slot + 2 min still got old data.
+  for (const tag of TAGS) revalidateTag(tag, { expire: 0 });
+  // Request the pages ourselves so this request pays the blocking render, not a visitor.
   after(async () => {
     // shortcut: the tag invalidation is flushed concurrently with `after`, so wait for it; switch to a separate cron call if warms still miss.
     await new Promise((resolve) => setTimeout(resolve, 3_000));

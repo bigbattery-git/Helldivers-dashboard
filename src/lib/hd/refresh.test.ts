@@ -1,17 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { refreshDelay } from "./refresh";
+import { behind } from "./refresh";
 
-const MIN = 60_000;
+const at = (iso: string) => Date.parse(iso);
 
-describe("refreshDelay", () => {
+describe("behind", () => {
   it.each([
-    ["2026-10-29T12:00:00Z", 2 * MIN],
-    ["2026-10-29T12:01:00Z", 1 * MIN],
-    ["2026-10-29T12:02:00Z", 15 * MIN],
-    ["2026-10-29T12:02:01Z", 15 * MIN - 1_000],
-    ["2026-10-29T12:14:59Z", 2 * MIN + 1_000],
-    ["2026-10-29T12:46:00Z", 1 * MIN],
-  ])("at %s waits %d ms", (at, ms) => {
-    expect(refreshDelay(Date.parse(at))).toBe(ms);
+    // Before slot + 2 min the collector may still be running.
+    ["2026-10-29T11:45:00Z", "2026-10-29T12:01:59Z", false],
+    ["2026-10-29T11:45:00Z", "2026-10-29T12:02:00Z", true],
+    ["2026-10-29T11:45:00Z", "2026-10-29T12:14:59Z", true],
+    // The current slot's run is on screen.
+    ["2026-10-29T12:00:00.08Z", "2026-10-29T12:02:00Z", false],
+    ["2026-10-29T12:06:30Z", "2026-10-29T12:10:00Z", false],
+    // Collection stalled for several slots: keep trying.
+    ["2026-10-29T10:00:00Z", "2026-10-29T12:03:00Z", true],
+  ])("run %s at %s -> %s", (startedAt, now, expected) => {
+    expect(behind(startedAt, at(now))).toBe(expected);
+  });
+
+  it("treats a page without a run (build shell) as behind", () => {
+    expect(behind(null, at("2026-10-29T12:05:00Z"))).toBe(true);
+    expect(behind(null, at("2026-10-29T12:01:00Z"))).toBe(false);
   });
 });
