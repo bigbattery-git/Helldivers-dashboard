@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
-import { mergeSteamNews, newsSchema, parseRss, playersSchema } from "./steam";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { PrismaClient } from "@/generated/prisma/client";
+import {
+  collectSteamNews,
+  mergeSteamNews,
+  newsSchema,
+  parseRss,
+  playersSchema,
+} from "./steam";
 import news from "./__fixtures__/steam-news.json";
 import players from "./__fixtures__/steam-players.json";
 
@@ -56,6 +63,33 @@ describe("mergeSteamNews", () => {
       "patch", // untagged 7.2.0
       "announcement",
     ]);
+  });
+});
+
+describe("collectSteamNews", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("saves the English list when the Korean RSS fails, then reports it", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        url.includes("store.steampowered.com")
+          ? new Response("down", { status: 503 })
+          : Response.json(news),
+      ),
+    );
+    const upsert = vi.fn((args: unknown) => args);
+    const $transaction = vi.fn(async (ops: unknown[]) => ops);
+    const db = {
+      newsItem: { upsert },
+      $transaction,
+    } as unknown as PrismaClient;
+
+    await expect(collectSteamNews(db)).rejects.toThrow(/HTTP 503/);
+    expect($transaction).toHaveBeenCalledOnce();
+    expect(upsert).toHaveBeenCalledTimes(3);
+    // No Korean columns in the update, so stored Korean text stays.
+    expect(upsert.mock.calls[0][0]).not.toHaveProperty("update.titleKo");
   });
 });
 
