@@ -2,8 +2,6 @@ import { cacheLife, cacheTag } from "next/cache";
 import { getDb } from "@/lib/db";
 import { isBuildPhase, LIFE } from "./cache";
 
-export type NewsKind = "dispatch" | "patch" | "announcement" | "x";
-
 export type NewsEntry = {
   id: string;
   source: string;
@@ -18,17 +16,13 @@ export type NewsEntry = {
   publishedAt: string;
 };
 
-// Unified feed, newest first (F-03-1); `kind` filters it (F-03-3).
-export async function getNews(
-  limit: number,
-  kind?: NewsKind,
-): Promise<NewsEntry[]> {
+// Unified feed, newest first (F-03-1). The news page filters it by kind in the browser (F-03-3).
+export async function getNews(limit: number): Promise<NewsEntry[]> {
   "use cache";
   cacheLife(LIFE);
   cacheTag("news");
   if (isBuildPhase()) return [];
   const rows = await getDb().newsItem.findMany({
-    where: kind ? { kind } : undefined,
     orderBy: { publishedAt: "desc" },
     take: limit,
   });
