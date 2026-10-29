@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Noto_Sans_KR, Rajdhani } from "next/font/google";
+import { AutoRefresh } from "@/components/hud/AutoRefresh";
 import { SiteFooter } from "@/components/hud/SiteFooter";
 import "./globals.css";
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         {children}
         <SiteFooter />
+        <AutoRefresh />
       </body>
     </html>
   );
