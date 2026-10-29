@@ -1,4 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
+import type { PrismaClient } from "@/generated/prisma/client";
+import { slotOf } from "@/lib/collect/util";
 import { getDb } from "@/lib/db";
 import {
   describeReward,
@@ -21,6 +23,21 @@ export type MajorOrder = {
   rewards: string[];
 };
 
+// Orders seen by the last successful assignment collection. An empty answer writes no rows,
+// so the newest `lastSeenAt` alone would keep an ended order on screen.
+export async function currentOrders(db: PrismaClient) {
+  const run = await db.collectionRun.findFirst({
+    where: { results: { path: ["assignment", "status"], equals: "ok" } },
+    orderBy: { startedAt: "desc" },
+    select: { startedAt: true },
+  });
+  if (!run) return [];
+  return db.assignment.findMany({
+    where: { lastSeenAt: slotOf(run.startedAt) },
+    orderBy: { startedAt: "asc" },
+  });
+}
+
 // Major orders seen in the latest assignment collection, with the latest progress (F-02).
 export async function getAssignments(): Promise<MajorOrder[]> {
   "use cache";
@@ -28,16 +45,8 @@ export async function getAssignments(): Promise<MajorOrder[]> {
   cacheTag("assignment");
   if (isBuildPhase()) return [];
   const db = getDb();
-  const last = await db.assignment.findFirst({
-    orderBy: { lastSeenAt: "desc" },
-    select: { lastSeenAt: true },
-  });
-  if (!last) return [];
   const [orders, planets] = await Promise.all([
-    db.assignment.findMany({
-      where: { lastSeenAt: last.lastSeenAt },
-      orderBy: { startedAt: "asc" },
-    }),
+    currentOrders(db),
     db.planet.findMany({ select: { index: true, nameKo: true, nameEn: true } }),
   ]);
   const nameOf = new Map(planets.map((p) => [p.index, p.nameKo ?? p.nameEn]));
@@ -78,15 +87,7 @@ export async function getAssignmentSeries(): Promise<OrderSeries[]> {
   cacheTag("assignment");
   if (isBuildPhase()) return [];
   const db = getDb();
-  const last = await db.assignment.findFirst({
-    orderBy: { lastSeenAt: "desc" },
-    select: { lastSeenAt: true },
-  });
-  if (!last) return [];
-  const orders = await db.assignment.findMany({
-    where: { lastSeenAt: last.lastSeenAt },
-    orderBy: { startedAt: "asc" },
-  });
+  const orders = await currentOrders(db);
   return Promise.all(
     orders.map(async (o) => {
       const snaps = await db.assignmentSnapshot.findMany({
