@@ -246,6 +246,16 @@ P2 남은 항목(E-02 클라우드 DB, E-03 Vercel 연결, E-07 Preview 배포)�
 - [x] Q-04 Q-03 360·1440px 가로 스크롤 없음, "(원문)" 버튼 키보드 포커스 (1280·1440px 4열, 360px 1열 확인)
 - [x] 검사 통과 (format·lint·typecheck·test·build, 로컬)
 
+### 자동 갱신 (SRS v6, 2026-10-29)
+
+요구사항은 [SRS v6](SRS-v6.md)를 따른다.
+- [x] SRS v6 작성, 체크리스트·CLAUDE.md 반영
+- [ ] A-01 슬롯 + 2분(02·17·32·47분)마다 `router.refresh()` + 다음 갱신까지 남은 시간 계산 테스트
+- [ ] A-02 숨긴 탭은 받지 않고, 다시 보일 때 밀린 갱신 한 번
+- [ ] A-03 갱신 뒤 LAST UPDATE·지연 배지가 새 수집 기준으로 바뀐다 (로컬 확인)
+- [ ] 검사 통과 (format·lint·typecheck·test·build, 로컬)
+- [ ] 운영 확인: 열어 둔 홈이 x2분에 새 수집 시각으로 바뀌고, 그 요청이 캐시 `HIT`
+
 ### 배포 (P2 잔여)
 - [x] **[사용자]** E-02 Supabase 새 프로젝트 `helldivers-dashboard`. 일시정지된 기존 프로젝트는 그대로 둔다 (2026-10-27 결정. 생성 화면은 Americas·Europe·Asia-Pacific 일반 리전만 고를 수 있어 시드니 `ap-southeast-2`로 생성됨. 서울로 다시 만들지 않고 시드니 유지, 사용자 결정)
 - [x] E-02 E-03 Vercel 프로젝트 연결(함수 리전은 DB와 같은 Sydney `syd1`, `vercel.json`으로 고정. ADR 0003 "리전 맞춤"), 클라우드 마이그레이션 4개 적용(`prisma migrate deploy`), 배포 `/api/health` 200·`db: ok`. `vercel env pull`은 하지 않음: `.env.local`을 덮어써 로컬 dev가 클라우드 DB를 보게 되므로, 클라우드 대상 명령은 `.env.cloud`(`DIRECT_URL`·`COLLECT_URL`, gitignore)를 `node --env-file=.env.cloud`로 먼저 읽는다
