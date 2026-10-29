@@ -3,9 +3,10 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import { Countdown } from "@/components/hud/Countdown";
 import type { Front } from "@/lib/data/war";
-import { defenseOutlook, enemyProgress } from "@/lib/hd/defense";
+import { enemyProgress } from "@/lib/hd/defense";
 import { tooltipEffects } from "@/lib/hd/effects";
 import { formatNumber, formatPercent, formatRate } from "@/lib/hd/format";
+import { type FrontEta, frontEta } from "@/lib/hd/fronts";
 import { factionOf } from "@/lib/hd/terms";
 
 // Tooltip contents for map planets (design system README "LiberationTooltip", "DefenseTooltip").
@@ -158,11 +159,23 @@ export function DefenseBars({
   );
 }
 
-export function DefenseTooltip({ front }: { front: Front }) {
-  const now = useNow();
-  const end = new Date(front.defense!.expiresAt);
-  const outlook =
-    now && defenseOutlook(front.progress, front.perHour, end, now);
+// Same pace-from-slot rule as the front cards (F-01-6), so card and tooltip never disagree.
+const OUTLOOK: Partial<
+  Record<FrontEta["kind"], { good: boolean; text: string }>
+> = {
+  done: { good: true, text: "방어 성공" },
+  victory: { good: true, text: "우세 · 방어 성공 예상" },
+  fail: { good: false, text: "위험 · 속도 부족" },
+};
+
+export function DefenseTooltip({
+  front,
+  slot,
+}: {
+  front: Front;
+  slot: string | null;
+}) {
+  const outlook = slot && OUTLOOK[frontEta(front, slot).kind];
   return (
     <>
       <div className="hd-tip__head">

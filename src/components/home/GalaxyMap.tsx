@@ -30,9 +30,11 @@ const STARS = [
 export function GalaxyMap({
   fronts,
   moTargets,
+  slot,
 }: {
   fronts: Front[];
   moTargets: number[];
+  slot: string | null;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const targets = new Set(moTargets);
@@ -190,7 +192,7 @@ export function GalaxyMap({
             className={`hd-tip ${tip.defense ? "hd-tip--defense" : ""} z-10 mt-3 max-sm:w-full sm:absolute sm:left-[var(--tip-left)] sm:top-[var(--tip-top)] sm:mt-0 sm:[transform:var(--tip-tf)]`}
           >
             {tip.defense ? (
-              <DefenseTooltip front={tip} />
+              <DefenseTooltip front={tip} slot={slot} />
             ) : (
               <LiberationTooltip front={tip} major={targets.has(tip.index)} />
             )}
