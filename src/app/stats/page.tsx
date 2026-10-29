@@ -47,20 +47,15 @@ export default async function StatsPage() {
             Steam 기준, PS5는 포함하지 않습니다.
           </p>
           <RangeChart
-            views={[
+            label="Steam 동접자"
+            format="number"
+            series={[
               {
-                key: "players",
-                label: "Steam 동접자",
-                format: "number",
-                series: [
-                  {
-                    name: "동접자",
-                    color: "var(--color-muted)",
-                    points: allRanges(
-                      players.map((p) => ({ at: p.slot, value: p.players })),
-                    ),
-                  },
-                ],
+                name: "동접자",
+                color: "var(--color-muted)",
+                points: allRanges(
+                  players.map((p) => ({ at: p.slot, value: p.players })),
+                ),
               },
             ]}
           />
@@ -78,18 +73,13 @@ export default async function StatsPage() {
             근사치입니다.
           </p>
           <RangeChart
-            views={[
-              {
-                key: "shares",
-                label: "진영별 투입 인원 비율",
-                format: "percent",
-                series: Object.entries(shares).map(([faction, points]) => ({
-                  name: factionOf(Number(faction))?.name ?? faction,
-                  color: factionColor(Number(faction)),
-                  points: allRanges(points),
-                })),
-              },
-            ]}
+            label="진영별 투입 인원 비율"
+            format="percent"
+            series={Object.entries(shares).map(([faction, points]) => ({
+              name: factionOf(Number(faction))?.name ?? faction,
+              color: factionColor(Number(faction)),
+              points: allRanges(points),
+            }))}
           />
         </section>
       </div>
@@ -137,18 +127,13 @@ export default async function StatsPage() {
             주요 명령 진행률 · {o.title}
           </h2>
           <RangeChart
-            views={[
-              {
-                key: "progress",
-                label: "주요 명령 진행률",
-                format: "percent",
-                series: o.tasks.map((t) => ({
-                  name: t.text,
-                  color: t.race ? factionColor(t.race) : "var(--color-accent)",
-                  points: allRanges(t.points),
-                })),
-              },
-            ]}
+            label="주요 명령 진행률"
+            format="percent"
+            series={o.tasks.map((t) => ({
+              name: t.text,
+              color: t.race ? factionColor(t.race) : "var(--color-accent)",
+              points: allRanges(t.points),
+            }))}
           />
         </section>
       ))}
