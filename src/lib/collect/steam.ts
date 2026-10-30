@@ -106,11 +106,14 @@ export async function collectSteamPlayers(db: PrismaClient, slot: Date) {
 }
 
 export async function collectSteamNews(db: PrismaClient) {
-  const [{ data }, { text }] = await Promise.all([
+  const [newsRes, rssRes] = await Promise.allSettled([
     fetchJson(NEWS_URL, newsSchema),
     fetchText(RSS_URL),
   ]);
-  const items = mergeSteamNews(data.appnews.newsitems, parseRss(text));
+  if (newsRes.status === "rejected") throw newsRes.reason;
+  // Korean text is optional here: without the RSS the English list is still saved, stored Korean kept.
+  const rss = rssRes.status === "fulfilled" ? parseRss(rssRes.value.text) : [];
+  const items = mergeSteamNews(newsRes.value.data.appnews.newsitems, rss);
   await db.$transaction(
     items.map(({ externalId, ...row }) => {
       const where = { source: "steam", externalId };
@@ -121,5 +124,6 @@ export async function collectSteamNews(db: PrismaClient) {
       });
     }),
   );
+  if (rssRes.status === "rejected") throw rssRes.reason;
   return { count: items.length };
 }
