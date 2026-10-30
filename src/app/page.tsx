@@ -31,7 +31,11 @@ export default async function Home() {
     <main className="mx-auto flex w-full max-w-[1392px] flex-col gap-5 px-4 py-6 sm:px-8 sm:py-8">
       <PageHeader war={war} players={players} last={last} />
       <div className="flex flex-wrap gap-5">
-        <GalaxyMap fronts={fronts} moTargets={moTargets} />
+        <GalaxyMap
+          fronts={fronts}
+          moTargets={moTargets}
+          slot={war?.slot ?? null}
+        />
         <MajorOrderPanel orders={orders} />
       </div>
       <FrontCards
