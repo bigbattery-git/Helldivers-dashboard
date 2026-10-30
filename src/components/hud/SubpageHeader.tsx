@@ -34,7 +34,7 @@ export function SubpageHeader({
           {last ? formatKst(last.startedAt) : "—"}
         </div>
         <div className="flex flex-wrap gap-1">
-          <StaleBadge startedAt={last?.startedAt ?? null} />
+          <StaleBadge last={last} />
           <FallbackBadge last={last} />
         </div>
       </div>
