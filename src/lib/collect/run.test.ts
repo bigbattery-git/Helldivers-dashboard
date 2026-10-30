@@ -1,7 +1,13 @@
 import * as Sentry from "@sentry/nextjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { collectStatus, collectWarInfo, collectWarStats } from "./arrowhead";
+import {
+  collectAssignments,
+  collectNewsFeed,
+  collectStatus,
+  collectWarInfo,
+  collectWarStats,
+} from "./arrowhead";
 import { DEADLINE_MS, runCollection } from "./run";
 import { collectSteamNews } from "./steam";
 import { translatePending } from "./translate";
@@ -150,6 +156,21 @@ describe("runCollection", () => {
     expect(results.status).toMatchObject({ status: "ok" });
     expect(db.collectionRun.update).toHaveBeenCalledOnce();
     expect(Sentry.flush).toHaveBeenCalledOnce();
+  });
+
+  it("starts no step after the deadline closed the run", async () => {
+    vi.useFakeTimers();
+    vi.mocked(collectStatus).mockReturnValueOnce(
+      new Promise((resolve) =>
+        setTimeout(() => resolve({} as never), DEADLINE_MS + 5_000),
+      ),
+    );
+    const done = runCollection(fakeDb().client, now);
+    await vi.advanceTimersByTimeAsync(DEADLINE_MS);
+    await done;
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(collectAssignments).not.toHaveBeenCalled();
+    expect(collectNewsFeed).not.toHaveBeenCalled();
   });
 
   it("rechecks the war after the last run's Status failed", async () => {

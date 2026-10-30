@@ -58,10 +58,14 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
     });
   };
 
+  // Set at the deadline: the run is already closed, so no step may start after it.
+  // shortcut: a step already running still finishes and may write after the cache refresh; pass an AbortSignal down if that shows up.
+  let expired = false;
   const step = async (
     name: string,
     fn: () => Promise<Prisma.InputJsonObject>,
   ) => {
+    if (expired) return;
     const start = performance.now();
     const ms = () => Math.round(performance.now() - start);
     try {
@@ -152,6 +156,7 @@ export async function runCollection(db: PrismaClient, now = new Date()) {
   // A hung source must not run into maxDuration, where the platform kills us before `finally`.
   const deadline = new Promise<void>((resolve) => {
     timer = setTimeout(() => {
+      expired = true;
       fail("deadline", new Error(`collection exceeded ${DEADLINE_MS}ms`));
       resolve();
     }, DEADLINE_MS);
