@@ -92,15 +92,17 @@ export async function getWarOverview(): Promise<WarOverview | null> {
         faction: e?.race ?? s.owner,
         players: s.players,
         progress,
-        perHour: prev
-          ? ratePerHour(
-              {
-                value: progressOf(prev, p.maxHealth, e?.maxHealth),
-                at: hourAgo,
-              },
-              { value: progress, at: slot },
-            )
-          : null,
+        // A defense younger than an hour has no hour-old event health to compare with.
+        perHour:
+          prev && !(e && e.startedAt > hourAgo)
+            ? ratePerHour(
+                {
+                  value: progressOf(prev, p.maxHealth, e?.maxHealth),
+                  at: hourAgo,
+                },
+                { value: progress, at: slot },
+              )
+            : null,
         defense: e
           ? {
               startedAt: e.startedAt.toISOString(),
